@@ -1,13 +1,18 @@
 # MIT License
 
 # Polymart Verification Bot Base
-# Version 3.0.0 (oss/main)
+# Version 3.1.0 (oss/main)
 
-# The base to make your own Polymart verification discord Bot
-# Warning: I wrote this in 1 day, code is very bad, but it works lol
+# A bot that allow you to do ownership verification
+# Configurable though YAML-based config
+# Note: I wrote this in 1 day, code is very bad, but it works lol
 
-# Requires aiohttp & discord-py-interactions, install them with pip3
+# Requires aiohttp, discord-py-interactions and ruamel.yaml, install them with pip3
 
+# Check the config for a brief idea how to use this thing
+
+from ruamel import yaml
+from pathlib import Path
 import aiohttp
 import random
 import json
@@ -15,40 +20,30 @@ import interactions
 import os
 import datetime
 
-# bot version
-# dont change this unless PR
+config = Path('config.yml')
+yaml1 = yaml.YAML(typ='safe')
+configData = yaml1.load(config)
+
+# Bot version
+# Don't change this unless PR
 # major.minor.patch
-bot_version = "3.0.0"
+bot_version = "3.1.0"
 
 # <closed/oss> / <git branch>
-# dont change this unless you make a closed fork or change git branch
+# Don't change this unless you make a closed fork or change git branch
 bot_branch = "oss/main"
-
-# Your discord bot token
-# The bot must have the bot and application.commands permission
-token = "Replace_This_With_The_Token"
 
 # Don't change this 
 base_url = "https://api.polymart.org"
 
-# Your "service", can be basically anything
-service = "BaseVerification"
+# Also don't touch this
+resourceList = {}
 
-# Your discord server ID
-server_id =
-
-# plugin_name_verified_role: the ID of the role that the bot will give after verify (one per plugin)
-plugin_name_verified_role =
-
-# plugin_name_resource_id: polymart resource ID for the plugin that you want to verify (one per plugin)
-plugin_name_resource_id =
-
-# your Polymart api key, must have the List Buyer permission
-api_key = "Replace_This_With_The_Api_Key"
-
-# to verify ownership for a plugin, you can use checkAndVerify, for the user_token arg just type "token" here (without the quotes ofc), for other info it depends on your plugin and your server, make sure to use the correct api key for the plugin (the api key need to be from the one who sell the plugin)
-# checkAndVerify returns a boolean based on if the verification is success or not, aka it return True (captial T matters) if the user bought the plugin and False (again, F matters) if the user not or verify failed fsr, how you want to store it is your choice (i suggest put it in the text itself)
-# modify the text string to change the verification summary
+# Config stuff
+token = configData['discord-bot-token']
+service = configData['service']
+server_id = configData['discord-server-id']
+global_api_key = configData['global-api-key']
 
 class PolymartAPI:
    async def generateVerifyURL():
@@ -81,6 +76,29 @@ class PolymartAPI:
        async with aiohttp.ClientSession() as session:
           async with session.post(url, json=arg) as r:
              return json.loads(str(await r.text()))
+
+class Resource:
+    resourceName = None
+    resourceID = None
+    resourceRoleID = None
+    resourceIcon = None
+    resourceSpecificKey = None
+    def __init__(self, resourceName, resourceID, resourceRoleID, resourceIcon, resourceSpecificKey):
+        self.resourceName = resourceName
+        self.resourceID = resourceID
+        self.resourceRoleID = resourceRoleID
+        self.resourceIcon = resourceIcon
+        self.resourceSpecificKey = resourceSpecificKey
+    def getResourceName(self):
+        return self.resourceName
+    def getResourceID(self):
+        return self.resourceID
+    def getResourceRoleID(self):
+        return self.resourceRoleID
+    def getResourceIcon(self):
+        return self.resourceIcon
+    def getResourceSpecificKey(self):
+        return self.resourceSpecificKey
 
 print("This bot is licensed under MIT license")
 print("Bot Token: " + token)
@@ -152,11 +170,21 @@ async def user_token_response(ctx, response: str):
     await ctx.defer()
     token = response
     member = ctx.member
-    user_name, user_id = await getUser(token, api_key)
-    text = "Username: " + user_name + "\nUser ID: " + user_id + "\n\nStatus: \n" + "\n\nVerification Successfully!"
+    user_name, user_id = await getUser(token, global_api_key)
+    base_success_text_part_1 = "Username: " + user_name + "\nUser ID: " + user_id + "\n\nStatus:"
+    base_success_text_part_2 = "\n\nVerification Successfully!"
+    final_success_text = ""
+    await getAllResources()
+    for r in resourceList:
+        specificKey = global_api_key
+        if resourceList[r].getResourceSpecificKey() is not None:
+            specificKey = r.getResourceSpecificKey()
+        final_success_text += "\n" + resourceList[r].getResourceIcon() + " **" + resourceList[r].getResourceName() + "**: " + str(await checkAndVerify(ctx, specificKey, resourceList[r].getResourceID(), token, resourceList[r].getResourceRoleID()))
+    text = base_success_text_part_1 + final_success_text + base_success_text_part_2
     text2 = text.replace("False", ":x:")
     text3 = text2.replace("True", ":white_check_mark:")
-    embed = interactions.Embed(title="Verification Summary for User " + str(ctx.author), description=text3, color=0x33a343)
+    text4 = text3.replace("None", "")
+    embed = interactions.Embed(title="Verification Summary for User " + str(ctx.author), description=text4, color=0x33a343)
     embed.set_footer(text="Requested by " + str(ctx.author) + " at " + str(datetime.datetime.now().strftime("%m/%d/%Y %H:%M")) + "  |  Bot version " + bot_version + " (" + bot_branch + ")")
     embed.set_thumbnail(url=member.user.avatar_url)
     await ctx.edit(embeds=embed, components=None)
@@ -181,5 +209,13 @@ async def checkAndVerify(context, api_key, resource_id, user_token, verified_rol
             return False
     elif context.author.roles and verified_role_id in context.author.roles:
             return True
+
+async def getAllResources():
+    resourceFile = Path('resources.yml')
+    resourceData = yaml1.load(resourceFile)
+    for r in resourceData:
+        resource = resourceData[r]
+        resourceConf = Resource(resource['resource-name'], resource['resource-id'], resource['discord-role-id'], resource['icon'], resource['api-key'])
+        resourceList[r] = resourceConf
             
 bot.start()

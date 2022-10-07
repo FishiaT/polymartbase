@@ -1,0 +1,16 @@
+# This is the main configuration file for PolymartBase
+# Change the values accordingly to your server.
+
+# Your Discord bot token
+discord-bot-token: "TOKEN"
+
+# Your Discord server ID
+discord-server-id: 0000000
+
+# Global Polymart API Key
+# Used for fetching Username, User ID and default if there is no product-specific api key specified
+global-api-key: "API KEY HERE"
+
+# Your service name
+# Can be whatever you want
+service: "ExampleService"
