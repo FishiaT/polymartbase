@@ -18,3 +18,7 @@ service: "ExampleService"
 # Bot activity
 # Will be shown as Playing <activitys>
 activity: "/verify"
+
+# Specify this if you want the /verify command to only be able to used in a specific channel
+# Discord channel ID, leave this empty to disable it
+channel: 

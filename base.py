@@ -1,7 +1,7 @@
 # MIT License
 
 # Polymart Verification Bot Base
-# Version 3.1.1 (oss/main)
+# Version 3.1.2 (oss/main)
 
 # A bot that allow you to do ownership verification
 # Configurable though YAML-based config
@@ -27,7 +27,7 @@ configData = yaml1.load(config)
 # Bot version
 # Don't change this unless PR
 # major.minor.patch
-bot_version = "3.1.1"
+bot_version = "3.1.2"
 
 # <closed/oss> / <git branch>
 # Don't change this unless you make a closed fork or change git branch
@@ -45,6 +45,7 @@ service = configData['service']
 server_id = configData['discord-server-id']
 global_api_key = configData['global-api-key']
 activity = configData['activity']
+channelRestrict = configData['channel']
 
 class PolymartAPI:
    async def generateVerifyURL():
@@ -113,6 +114,12 @@ bot = interactions.Client(token=token, presence=interactions.ClientPresence(acti
     scope=server_id
 )
 async def verify(ctx: interactions.CommandContext):
+   channel_id = ctx.channel.id
+   if channelRestrict is not None:
+       if channelRestrict != channel_id:
+           errEmbed = interactions.Embed(description=":x: Sorry, you cannot use this command in this channel!")
+           await ctx.send(embeds=errEmbed, ephemeral=True)
+           return
    getTokenButton = interactions.Button(
         style=interactions.ButtonStyle.LINK,
         label="Get Token",
