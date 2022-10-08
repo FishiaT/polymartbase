@@ -1,7 +1,7 @@
 # MIT License
 
 # Polymart Verification Bot Base
-# Version 3.1.0 (oss/main)
+# Version 3.1.1 (oss/main)
 
 # A bot that allow you to do ownership verification
 # Configurable though YAML-based config
@@ -27,7 +27,7 @@ configData = yaml1.load(config)
 # Bot version
 # Don't change this unless PR
 # major.minor.patch
-bot_version = "3.1.0"
+bot_version = "3.1.1"
 
 # <closed/oss> / <git branch>
 # Don't change this unless you make a closed fork or change git branch
@@ -44,6 +44,7 @@ token = configData['discord-bot-token']
 service = configData['service']
 server_id = configData['discord-server-id']
 global_api_key = configData['global-api-key']
+activity = configData['activity']
 
 class PolymartAPI:
    async def generateVerifyURL():
@@ -102,7 +103,7 @@ class Resource:
 
 print("This bot is licensed under MIT license")
 print("Bot Token: " + token)
-bot = interactions.Client(token=token, presence=interactions.ClientPresence(activities=[interactions.PresenceActivity(name="/verify", type=interactions.PresenceActivityType.GAME)]))
+bot = interactions.Client(token=token, presence=interactions.ClientPresence(activities=[interactions.PresenceActivity(name=activity, type=interactions.PresenceActivityType.GAME)]))
 
 # Commands
 

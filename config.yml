@@ -14,3 +14,7 @@ global-api-key: "API KEY HERE"
 # Your service name
 # Can be whatever you want
 service: "ExampleService"
+
+# Bot activity
+# Will be shown as Playing <activitys>
+activity: "/verify"
