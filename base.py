@@ -1,7 +1,7 @@
 # MIT License
 
 # Polymart Verification Bot Base
-# Version 3.1.2 (oss/main)
+# Version 3.1.3 (oss/main)
 
 # A bot that allow you to do ownership verification
 # Configurable though YAML-based config
@@ -27,7 +27,7 @@ configData = yaml1.load(config)
 # Bot version
 # Don't change this unless PR
 # major.minor.patch
-bot_version = "3.1.2"
+bot_version = "3.1.3"
 
 # <closed/oss> / <git branch>
 # Don't change this unless you make a closed fork or change git branch
@@ -186,7 +186,7 @@ async def user_token_response(ctx, response: str):
     for r in resourceList:
         specificKey = global_api_key
         if resourceList[r].getResourceSpecificKey() is not None:
-            specificKey = r.getResourceSpecificKey()
+            specificKey = resourceList[r].getResourceSpecificKey()
         final_success_text += "\n" + resourceList[r].getResourceIcon() + " **" + resourceList[r].getResourceName() + "**: " + str(await checkAndVerify(ctx, specificKey, resourceList[r].getResourceID(), token, resourceList[r].getResourceRoleID()))
     text = base_success_text_part_1 + final_success_text + base_success_text_part_2
     text2 = text.replace("False", ":x:")
