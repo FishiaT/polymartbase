@@ -18,7 +18,7 @@ resourceData = yaml1.load(Path('resources.yml'))
 
 # Bot version
 # i'm a bit fucked with versioning rn
-bot_version = "3.2.0"
+bot_version = "3.2.0-beta"
 
 # Git branch and whether it is open source or closed source
 bot_branch = "oss/3.2.0"
@@ -33,8 +33,8 @@ def verbose(msg):
 
 class PolymartAPI:
    async def generateVerifyURL():
-       url = base_url + "/v1/generateUserVerifyURL"
-       arg = {'service':service}
+       url = configData['base-url'] + "/v1/generateUserVerifyURL"
+       arg = {'service':configData['service']}
        verbose("PolymartAPI: generateVerifyURL() called, parameters: " + str(arg))
        token = None
        async with aiohttp.ClientSession() as session:
@@ -44,8 +44,8 @@ class PolymartAPI:
              return token
 
    async def verifyUser(token):
-       url = base_url + "/v1/verifyUser"
-       arg = {'service':service,'token':token}
+       url = configData['base-url'] + "/v1/verifyUser"
+       arg = {'service':configData['service'],'token':token}
        verbose("PolymartAPI: verifyUser() called, parameters: " + str(arg))
        async with aiohttp.ClientSession() as session:
           async with session.get(url, json=arg) as r:
@@ -54,7 +54,7 @@ class PolymartAPI:
              return id
 
    async def getUserData(api_key, user_id):
-       url = base_url + "/v1/getUserData"
+       url = configData['base-url'] + "/v1/getUserData"
        arg = {'api_key':api_key,'user_id':user_id}
        verbose("PolymartAPI: getUserData() called, parameters: " + str(arg))
        async with aiohttp.ClientSession() as session:
@@ -63,7 +63,7 @@ class PolymartAPI:
               return json.loads(str(await r.text()))
 
    async def getResourceUserData(api_key, resource_id, user_id):
-       url = base_url + "/v1/getResourceUserData"
+       url = configData['base-url'] + "/v1/getResourceUserData"
        arg = {'api_key':api_key,'resource_id':resource_id,'user_id':user_id}
        verbose("PolymartAPI: getResourceUserData() called, parameters: " + str(arg))
        async with aiohttp.ClientSession() as session:
@@ -101,16 +101,24 @@ bot = interactions.Client(token=configData['bot-token'], presence=interactions.C
 # Commands
 
 @bot.command(
+    name="reload",
+    description="Reload config files",
+    scope=configData['server-id']
+)
+async def reload(ctx: interactions.CommandContext):
+    verbose("Reload command triggered by " + str(ctx.author))
+
+@bot.command(
     name="verify",
     description="Verify ownership of plugins",
     scope=configData['server-id']
 )
 async def verify(ctx: interactions.CommandContext):
-   verbose("Command verify triggered by " + str(ctx.author))
+   verbose("Verify command triggered by " + str(ctx.author))
    channel_id = ctx.channel.id
    if configData['channel-id'] is not None:
        if configData['channel-id'] != channel_id:
-           errEmbed = interactions.Embed(description=configData['indicator']['false'] + " Sorry, you cannot use this command in this channel!")
+           errEmbed = interactions.Embed(description=configData['indicator']['nop'] + " Sorry, you cannot use this command in this channel!")
            await ctx.send(embeds=errEmbed, ephemeral=True)
            return
    getTokenButton = interactions.Button(
@@ -138,12 +146,6 @@ async def verify(ctx: interactions.CommandContext):
 @bot.component("verify")
 async def verify(ctx):
     verbose("Verify button interacted by " + str(ctx.author))
-    message = ctx.message
-    if ctx.author.id != message.interaction.user.id:
-       verbose("Wrong verification form interaction by " + str(ctx.author) + " form author " + str(message.interaction.user))
-       infoEmbed = interactions.Embed(description=configData['indicator']['false'] + " Sorry, This verification form is for " + str(message.interaction.user) + "! Please run **/verify** if you want to verify yourself.")
-       await ctx.send(embeds=infoEmbed, ephemeral=True)
-       return
     tokenInput = interactions.TextInput(
         style=interactions.TextStyleType.SHORT,
         label="Enter your Polymart token",
@@ -158,18 +160,11 @@ async def verify(ctx):
 
 @bot.component("cancel")
 async def cancel(ctx):
-    verbose("Cancel button interacted by " + str(ctx.author))
-    message = ctx.message
-    if ctx.author.id != message.interaction.user.id:
-       verbose("Wrong verification form interaction by " + str(ctx.author) + " form author " + str(message.interaction.user))
-       infoEmbed = interactions.Embed(description=configData['indicator']['false'] + " Sorry, This verification form is for " + str(message.interaction.user) + "! Please run **/verify** if you want to verify yourself.")
-       await ctx.send(embeds=infoEmbed, ephemeral=True)
-       return
     verbose("Cancelled " + str(ctx.author) + " verification form")
-    embed = interactions.Embed(description=configData['indicator']['true'] + " Cancelled verification for " + str(message.interaction.user) + "!")
-    await ctx.edit(embeds=embed, components=None)
-    finalEmbed = interactions.Embed(description=configData['indicator']['true'] + " Cancelled successfully!")
-    await ctx.send(embeds=finalEmbed, ephemeral=True)
+    embed = interactions.Embed(description=configData['indicator']['yessir'] + " Cancelled verification for " + str(message.interaction.user) + "!")
+    await ctx.send(embeds=embed, components=None)
+    #finalEmbed = interactions.Embed(description=configData['indicator']['yessir'] + " Cancelled successfully!")
+    #await ctx.send(embeds=finalEmbed, ephemeral=True)
 
 @bot.modal("user_token_response")
 async def user_token_response(ctx, response: str):
@@ -179,7 +174,7 @@ async def user_token_response(ctx, response: str):
     ownedResources = 0
     token = response
     member = ctx.member
-    user_name, user_id = await getUser(configData['bot-token'], configData['global-api-key'])
+    user_name, user_id = await getUser(response, configData['global-api-key'])
     base_success_text_part_1 = "Username: " + user_name + "\nUser ID: " + user_id + "\n\nStatus:"
     base_success_text_part_2 = "\n\nVerification Successfully!"
     final_success_text = ""
@@ -187,7 +182,7 @@ async def user_token_response(ctx, response: str):
     for r in resourceList:
         verbose("Checking ownership of resource " + str(resourceList[r].getResourceName()) + " for " + str(ctx.author) + "...")
         resourcesCount += 1
-        specificKey = global_api_key
+        specificKey = configData['global-api-key']
         if resourceList[r].getResourceSpecificKey() is not None:
             specificKey = resourceList[r].getResourceSpecificKey()
         ownershipStatus = await checkAndVerify(ctx, specificKey, resourceList[r].getResourceID(), configData['bot-token'], resourceList[r].getResourceRoleID())
@@ -197,17 +192,15 @@ async def user_token_response(ctx, response: str):
         final_success_text += "\n" + resourceList[r].getResourceIcon() + " **" + resourceList[r].getResourceName() + "**: " + str(ownershipStatus)
         verbose("Finished checking ownership of resource " + str(resourceList[r].getResourceName()) + " for " + str(ctx.author) + "!")
     text = base_success_text_part_1 + final_success_text + base_success_text_part_2
-    text2 = text.replace("False", configData['indicator']['false'])
-    text3 = text2.replace("True", configData['indicator']['true'])
+    text2 = text.replace("False", configData['indicator']['nop'])
+    text3 = text2.replace("True", configData['indicator']['yessir'])
     text4 = text3.replace("None", "")
     verbose("Summary for " + str(ctx.author) + ": owned " + str(ownedResources) + "/" + str(resourcesCount))
     embed = interactions.Embed(title="Verification Summary for User " + str(ctx.author), description=text4, color=0x33a343)
     embed.set_footer(text="Requested by " + str(ctx.author) + " at " + str(datetime.datetime.now().strftime("%m/%d/%Y %H:%M")) + "  |  Bot version " + bot_version + " (" + bot_branch + ")")
     if configData['display-user-avatar'] == True:
         embed.set_thumbnail(url=member.user.avatar_url)
-    await ctx.edit(embeds=embed, components=None)
-    finalEmbed = interactions.Embed(description=configData['indicator']['true'] + " Verified " + str(ctx.author) + " successfully!")
-    await ctx.send(embeds=finalEmbed)
+    await ctx.send(embeds=embed, components=None)
     
 async def getUser(user_token, api_key):
     verbose("getUser() called, parameters: " + str(user_token) + ", " + str(api_key))

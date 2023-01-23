@@ -36,8 +36,9 @@ display-user-avatar: true
 # For external emojis, use emoji ID
 # To get the ID of the emoji, type \ before the emoji
 indicator:
-  true: ":white_check_mark:"
-  false: ":x:"
+  # Workaround a funny "bug"?
+  yessir: ":white_check_mark:"
+  nop: ":x:"
 
 # Roles ID that will be allowed to use reload command
 reload-role-ids:
