@@ -1,5 +1,5 @@
 # polymartbase
- A base Python discord bot for Polymart plugin verification
+ A base Python discord bot for Polymart plugin verification.
 
 ## Initial setup
  NOTE: This is mainly targeted at Windows and GNU/Linux systems, as these are the only platforms tested. However, since this is written in Python, it should work on every platform that support Python.
@@ -13,6 +13,6 @@
  Now clone this repository, edit the `config.yml` file and `resources.yml` file, then run the bot by `python3 base.py`. If no tracebacks occurs, then the bot should be online now.
 
 ## License
- This project is licensed under the MIT license.
+ This project is licensed under the permissive MIT license.
  
- tl/dr: use it, change it, modify it, do whatever you want with this, except you may not hold any developer liable for what you do.
+ tl/dr: do whatever you want with this bot, I don't care. But you may not hold me liable for what you did.

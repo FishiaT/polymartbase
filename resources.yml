@@ -1,6 +1,7 @@
 # Resources configuration file
 # Add all of your resource here
 
+# Resource ID
 example:
   # The name of your resource
   resource-name: "Example"
@@ -12,11 +13,11 @@ example:
   discord-role-id: 00000000000000
 
   # Icon for your resorce as a Discord emoji ID
-  # Leave this empty to disable it
+  # Leave this empty to disable
   # To get the ID of the emoji, type a \ before the emoji
-  icon: "emoji here>"
+  icon: "emoji here"
 
   # Resource specific API Key
-  # Specify this if the global API key cannot be used for this resource
-  # Leave this empty to disable it
-  api-key: 
+  # API key is used to get buyer list of this resource
+  # If not specified, the global API key will be used instead
+  api-key: "api key"

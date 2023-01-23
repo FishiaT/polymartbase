@@ -25,58 +25,72 @@ yaml1 = yaml.YAML(typ='safe')
 configData = yaml1.load(config)
 
 # Bot version
-# Don't change this unless PR
 # major.minor.patch
-bot_version = "3.1.3"
+# i'm a bit fucked with versioning rn
+bot_version = "3.2.0"
 
 # <closed/oss> / <git branch>
-# Don't change this unless you make a closed fork or change git branch
+# Git branch and whether it is open source or closed source
 bot_branch = "oss/main"
 
-# Don't change this 
-base_url = "https://api.polymart.org"
-
-# Also don't touch this
+# Used internally
 resourceList = {}
 
 # Config stuff
-token = configData['discord-bot-token']
+token = configData['bot-token']
+base_url = configData['base-url']
 service = configData['service']
-server_id = configData['discord-server-id']
+server_id = configData['server-id']
 global_api_key = configData['global-api-key']
 activity = configData['activity']
-channelRestrict = configData['channel']
+channelRestrict = configData['channel-id']
+printVerbose = configData['debug']['verbose']
+enableLogger = configData['debug']['logging']['enabled']
+loggerChannelID = configData['debug']['logging']['channel-id']
+
+def verbose(msg):
+    if printVerbose == True:
+        time = datetime.datetime.now().strftime('%H:%M:%S')
+        print("[" + str(time) + " - VERBOSE] " + msg)
 
 class PolymartAPI:
    async def generateVerifyURL():
+       verbose("PolymartAPI: generateVerifyURL() called")
        url = base_url + "/v1/generateUserVerifyURL"
        arg = {'service':service}
        token = None
        async with aiohttp.ClientSession() as session:
           async with session.get(url, json=arg) as r:
              token = json.loads(str(await r.text()))['response']['result']['url']
+             verbose("PolymartAPI: generateVerifyURL() success, token: " + str(token))
              return token
 
    async def verifyUser(token):
+       verbose("PolymartAPI: verifyUser() called")
        url = base_url + "/v1/verifyUser"
        arg = {'service':service,'token':token}
        async with aiohttp.ClientSession() as session:
           async with session.get(url, json=arg) as r:
              id = json.loads(str(await r.text()))['response']['result']['user']['id']
+             verbose("PolymartAPI: verifyUser() success, ID: " + str(id))
              return id
 
    async def getUserData(api_key, user_id):
+       verbose("PolymartAPI: getUserData() called")
        url = base_url + "/v1/getUserData"
        arg = {'api_key':api_key,'user_id':user_id}
        async with aiohttp.ClientSession() as session:
           async with session.post(url, json=arg) as r:
+              verbose("PolymartAPI: getUserData() success, JSON data: " + str(await r.text()))
               return json.loads(str(await r.text()))
 
    async def getResourceUserData(api_key, resource_id, user_id):
+       verbose("PolymartAPI: getResourceUserData() called")
        url = base_url + "/v1/getResourceUserData"
        arg = {'api_key':api_key,'resource_id':resource_id,'user_id':user_id}
        async with aiohttp.ClientSession() as session:
           async with session.post(url, json=arg) as r:
+             verbose("PolymartAPI: getResourceUserData() success, JSON data: " + str(await r.text()))
              return json.loads(str(await r.text()))
 
 class Resource:
@@ -102,8 +116,8 @@ class Resource:
     def getResourceSpecificKey(self):
         return self.resourceSpecificKey
 
-print("This bot is licensed under MIT license")
-print("Bot Token: " + token)
+print("PolymartBase " + str(bot_version))
+print("Licensed under the permissive MIT license")
 bot = interactions.Client(token=token, presence=interactions.ClientPresence(activities=[interactions.PresenceActivity(name=activity, type=interactions.PresenceActivityType.GAME)]))
 
 # Commands
