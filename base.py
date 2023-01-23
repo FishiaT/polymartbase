@@ -1,15 +1,7 @@
-# MIT License
+# PolymartBase
+# Licensed under MIT license
 
-# Polymart Verification Bot Base
-# Version 3.1.3 (oss/main)
-
-# A bot that allow you to do ownership verification
-# Configurable though YAML-based config
-# Note: I wrote this in 1 day, code is very bad, but it works lol
-
-# Requires aiohttp, discord-py-interactions and ruamel.yaml, install them with pip3
-
-# Check the config for a brief idea how to use this thing
+# Code is not-so-great, but it works!
 
 from ruamel import yaml
 from pathlib import Path
@@ -20,9 +12,9 @@ import interactions
 import os
 import datetime
 
-config = Path('config.yml')
 yaml1 = yaml.YAML(typ='safe')
-configData = yaml1.load(config)
+configData = yaml1.load(Path('config.yml'))
+resourceData = yaml1.load(Path('resources.yml'))
 
 # Bot version
 # i'm a bit fucked with versioning rn
@@ -33,19 +25,6 @@ bot_branch = "oss/3.2.0"
 
 # Used internally
 resourceList = {}
-
-# Config stuff
-token = configData['bot-token']
-base_url = configData['base-url']
-service = configData['service']
-server_id = configData['server-id']
-global_api_key = configData['global-api-key']
-activity = configData['activity']
-channelRestrict = configData['channel-id']
-printVerbose = configData['debug']['verbose']
-enableLogger = configData['debug']['logging']['enabled']
-loggerChannelID = configData['debug']['logging']['channel-id']
-displayAvatar = 
 
 def verbose(msg):
     if configData['debug']['verbose'] == True:
@@ -154,7 +133,7 @@ async def verify(ctx: interactions.CommandContext):
    )
    infoEmbed = interactions.Embed(title="Hi there!", description="Hi there " + str(ctx.author) + "! This form is here to help you get started! \n\nTo get started, click the **Get Token** button and it will automatically open a link. \nLogin into your Polymart account and it will generate a token. \nCopy that token and click the **Verify** button, enter your token and let the bot handle the rest! \n\nIf you have bought a plugin after verification and would like to get verified for that plugin, just do verify again! \n\nIf you ran this command by accident, click to the **Cancel** button to cancel this form.", color=0x33a343)
    infoEmbed.set_footer(text="Requested by " + str(ctx.author) + " at " + str(datetime.datetime.now().strftime("%m/%d/%Y %H:%M")) + "  |  Bot version " + bot_version + " (" + bot_branch + ")")
-   await ctx.send(embeds=infoEmbed, components=row)
+   await ctx.send(embeds=infoEmbed, components=row, ephemeral=True)
 
 @bot.component("verify")
 async def verify(ctx):
@@ -196,6 +175,8 @@ async def cancel(ctx):
 async def user_token_response(ctx, response: str):
     verbose("Token received, verifying " + str(ctx.author) + "...")
     await ctx.defer()
+    resourcesCount = 0
+    ownedResources = 0
     token = response
     member = ctx.member
     user_name, user_id = await getUser(configData['bot-token'], configData['global-api-key'])
@@ -204,47 +185,61 @@ async def user_token_response(ctx, response: str):
     final_success_text = ""
     await getAllResources()
     for r in resourceList:
+        verbose("Checking ownership of resource " + str(resourceList[r].getResourceName()) + " for " + str(ctx.author) + "...")
+        resourcesCount += 1
         specificKey = global_api_key
         if resourceList[r].getResourceSpecificKey() is not None:
             specificKey = resourceList[r].getResourceSpecificKey()
-        final_success_text += "\n" + resourceList[r].getResourceIcon() + " **" + resourceList[r].getResourceName() + "**: " + str(await checkAndVerify(ctx, specificKey, resourceList[r].getResourceID(), configData['bot-token'], resourceList[r].getResourceRoleID()))
+        ownershipStatus = await checkAndVerify(ctx, specificKey, resourceList[r].getResourceID(), configData['bot-token'], resourceList[r].getResourceRoleID())
+        if ownershipStatus == True:
+            ownedResources += 1
+            verbose(str(ctx.author) + " owns resource " + str(resourceList[r].getResourceName()))
+        final_success_text += "\n" + resourceList[r].getResourceIcon() + " **" + resourceList[r].getResourceName() + "**: " + str(ownershipStatus)
+        verbose("Finished checking ownership of resource " + str(resourceList[r].getResourceName()) + " for " + str(ctx.author) + "!")
     text = base_success_text_part_1 + final_success_text + base_success_text_part_2
     text2 = text.replace("False", configData['indicator']['false'])
     text3 = text2.replace("True", configData['indicator']['true'])
     text4 = text3.replace("None", "")
+    verbose("Summary for " + str(ctx.author) + ": owned " + str(ownedResources) + "/" + str(resourcesCount))
     embed = interactions.Embed(title="Verification Summary for User " + str(ctx.author), description=text4, color=0x33a343)
     embed.set_footer(text="Requested by " + str(ctx.author) + " at " + str(datetime.datetime.now().strftime("%m/%d/%Y %H:%M")) + "  |  Bot version " + bot_version + " (" + bot_branch + ")")
     if configData['display-user-avatar'] == True:
         embed.set_thumbnail(url=member.user.avatar_url)
     await ctx.edit(embeds=embed, components=None)
-    finalEmbed = interactions.Embed(description=":white_check_mark: Verified " + str(ctx.author) + " successfully!")
+    finalEmbed = interactions.Embed(description=configData['indicator']['true'] + " Verified " + str(ctx.author) + " successfully!")
     await ctx.send(embeds=finalEmbed)
     
 async def getUser(user_token, api_key):
+    verbose("getUser() called, parameters: " + str(user_token) + ", " + str(api_key))
     user_id = await PolymartAPI.verifyUser(user_token)
     user_data = await PolymartAPI.getUserData(api_key, user_id)
     user_name = user_data['response']['user']['username']
+    verbose("getUser() success, results: " + str(user_name) + ", " + str(user_id))
     return user_name, user_id
     
 async def checkAndVerify(context, api_key, resource_id, user_token, verified_role_id):
+    verbose("checkAndVerify() called, parameters: " + str(api_key) + ", " + str(resource_id) + ", " + str(user_token) + ", " + str(verified_role_id))
     user_id = await PolymartAPI.verifyUser(user_token)
     user_data = await PolymartAPI.getUserData(api_key, user_id)
     resource_user_data = await PolymartAPI.getResourceUserData(api_key, resource_id, user_id)
     if context.author.roles and verified_role_id not in context.author.roles or not context.author.roles:
         if resource_user_data['response']['resource']['purchaseValid']:
+            verbose("checkAndVerify() success, adding role...")
             await context.author.add_role(verified_role_id, server_id)
             return True
         else:
+            verbose("checkAndVerify() success")
             return False
     elif context.author.roles and verified_role_id in context.author.roles:
-            return True
+        verbose("checkAndVerify() success")
+        return True
 
 async def getAllResources():
-    resourceFile = Path('resources.yml')
-    resourceData = yaml1.load(resourceFile)
+    verbose("getAllResources() called")
     for r in resourceData:
         resource = resourceData[r]
-        resourceConf = Resource(resource['resource-name'], resource['resource-id'], resource['discord-role-id'], resource['icon'], resource['api-key'])
+        resourceConf = Resource(resource['resource-name'], resource['resource-id'], resource['role-id'], resource['icon'], resource['api-key'])
         resourceList[r] = resourceConf
+    verbose("getAllResources() success")
             
 bot.start()

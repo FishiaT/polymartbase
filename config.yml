@@ -21,6 +21,7 @@ service: "ExampleService"
 
 # Bot activity
 # Will be shown as Playing <activity>
+# Leave empty to disable
 activity: "Change me"
 
 # Specify this if you want the /verify command to only be able to used in a specific channel
@@ -46,6 +47,6 @@ reload-role-ids:
 # Useful for debugging
 debug:
   # Print verbose log to the bot's console
-  # It will print all API calls, as well as the result, and all bot activity and internal
-  # Your console might get spammed, but its useful to see what's happening behind the scenes
+  # It will print all of bot activitiies like api calls and just internal stuff
+  # Your console might get spammed, but its useful to see what's happening behind the scene
   verbose: false

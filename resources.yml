@@ -10,7 +10,7 @@ example:
   resource-id: 0000
 
   # Role ID that the bot will give if user successfully verified
-  discord-role-id: 00000000000000
+  role-id: 00000000000000
 
   # Discord emoji as resource icon
   # See config.yml indicators to know what to use
