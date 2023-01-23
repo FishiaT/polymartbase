@@ -21,7 +21,9 @@ resourceData = yaml1.load(Path('resources.yml'))
 bot_version = "3.2.0-beta"
 
 # Git branch and whether it is open source or closed source
-bot_branch = "oss/3.2.0"
+# bot_branch = "oss/3.2.0"
+# Temporary branch to note that this is an unstable version that is used to test
+bot_branch = "UNSTABLE VERSION, REPORT ANY BUGS YOU MET"
 
 # Used internally
 resourceList = {}
@@ -103,10 +105,17 @@ bot = interactions.Client(token=configData['bot-token'], presence=interactions.C
 @bot.command(
     name="reload",
     description="Reload config files",
+    default_member_permissions=interactions.Permissions.ADMINISTRATOR,
     scope=configData['server-id']
 )
 async def reload(ctx: interactions.CommandContext):
     verbose("Reload command triggered by " + str(ctx.author))
+    configData = yaml1.load(Path('config.yml'))
+    resourceData = yaml1.load(Path('resources.yml'))
+    infoEmbed = interactions.Embed(description=configData['indicator']['yessir'] + " Reload config files successfully!", color=0x33a343)
+    infoEmbed.set_footer(text="Requested by " + str(ctx.author) + " at " + str(datetime.datetime.now().strftime("%m/%d/%Y %H:%M")) + "  |  Bot version " + bot_version + " (" + bot_branch + ")")
+    await ctx.send(embeds=infoEmbed, ephemeral=True)
+    verbose("Reload command success for " + str(ctx.author))
 
 @bot.command(
     name="verify",
@@ -201,6 +210,7 @@ async def user_token_response(ctx, response: str):
     if configData['display-user-avatar'] == True:
         embed.set_thumbnail(url=member.user.avatar_url)
     await ctx.send(embeds=embed, components=None)
+    verbose("Verify command success for " + (ctx.author))
     
 async def getUser(user_token, api_key):
     verbose("getUser() called, parameters: " + str(user_token) + ", " + str(api_key))

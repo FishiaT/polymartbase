@@ -1,6 +1,10 @@
 # This is the main configuration file for PolymartBase
 # Change the values accordingly to your server
 
+# WHEN CREATING THE BOT THOUGH DISCORD DEVELOPER PORTAL
+# MAKE SURE TO ENABLE "bot" AND "application.commands" SCOPE
+# OTHERWISE THE BOT WON'T WORK
+
 # Polymart API base url
 # The bot won't work if this is incorrect
 base-url: "https://api.polymart.org"
@@ -39,11 +43,6 @@ indicator:
   # Workaround a funny "bug"?
   yessir: ":white_check_mark:"
   nop: ":x:"
-
-# Roles ID that will be allowed to use reload command
-reload-role-ids:
-  - 0000
-  - 0000
 
 # Useful for debugging
 debug:
