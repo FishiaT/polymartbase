@@ -21,42 +21,31 @@ service: "ExampleService"
 
 # Bot activity
 # Will be shown as Playing <activity>
-activity: "You probably want to change this"
+activity: "Change me"
 
 # Specify this if you want the /verify command to only be able to used in a specific channel
 # Discord channel ID, leave this empty to disable
 channel-id: 0000
 
-# Commands
-# Set role restrictions for commands
-commands:
-  # The main command of the bot
-  # You don't want to restrict this command unless you want to fix it internally
-  verify:
-    # Restrict or not
-    restrict: false
-    # Roles ID that are allowed to use this command
-    # Other roles will be blocked
-    roles:
-      - 0000
-  # Reload config.yml file
-  # resources.yml will be reloaded everytime someone run /verify
-  # Syntax is the same as above
-  reload:
-    restrict: false
-    roles:
-      - 0000
+# Display user avatar on verification summary
+display-user-avatar: true
 
-# Useful for debugging or moderation purpose
+# Emoji indicators, will be used in anything
+# For built in emojis, use standard name (i.e. :smile:)
+# For external emojis, use emoji ID
+# To get the ID of the emoji, type \ before the emoji
+indicator:
+  true: ":white_check_mark:"
+  false: ":x:"
+
+# Roles ID that will be allowed to use reload command
+reload-role-ids:
+  - 0000
+  - 0000
+
+# Useful for debugging
 debug:
   # Print verbose log to the bot's console
   # It will print all API calls, as well as the result, and all bot activity and internal
   # Your console might get spammed, but its useful to see what's happening behind the scenes
   verbose: false
-  # Log all bot activities to a Discord channel
-  logging:
-    # Enable logging?
-    enabled: false
-    # Channel ID to send the log message
-    # Will be ignored if enabled is set to false
-    channel-id: 0000

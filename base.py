@@ -25,13 +25,11 @@ yaml1 = yaml.YAML(typ='safe')
 configData = yaml1.load(config)
 
 # Bot version
-# major.minor.patch
 # i'm a bit fucked with versioning rn
 bot_version = "3.2.0"
 
-# <closed/oss> / <git branch>
 # Git branch and whether it is open source or closed source
-bot_branch = "oss/main"
+bot_branch = "oss/3.2.0"
 
 # Used internally
 resourceList = {}
@@ -47,17 +45,18 @@ channelRestrict = configData['channel-id']
 printVerbose = configData['debug']['verbose']
 enableLogger = configData['debug']['logging']['enabled']
 loggerChannelID = configData['debug']['logging']['channel-id']
+displayAvatar = 
 
 def verbose(msg):
-    if printVerbose == True:
+    if configData['debug']['verbose'] == True:
         time = datetime.datetime.now().strftime('%H:%M:%S')
         print("[" + str(time) + " - VERBOSE] " + msg)
 
 class PolymartAPI:
    async def generateVerifyURL():
-       verbose("PolymartAPI: generateVerifyURL() called")
        url = base_url + "/v1/generateUserVerifyURL"
        arg = {'service':service}
+       verbose("PolymartAPI: generateVerifyURL() called, parameters: " + str(arg))
        token = None
        async with aiohttp.ClientSession() as session:
           async with session.get(url, json=arg) as r:
@@ -66,9 +65,9 @@ class PolymartAPI:
              return token
 
    async def verifyUser(token):
-       verbose("PolymartAPI: verifyUser() called")
        url = base_url + "/v1/verifyUser"
        arg = {'service':service,'token':token}
+       verbose("PolymartAPI: verifyUser() called, parameters: " + str(arg))
        async with aiohttp.ClientSession() as session:
           async with session.get(url, json=arg) as r:
              id = json.loads(str(await r.text()))['response']['result']['user']['id']
@@ -76,18 +75,18 @@ class PolymartAPI:
              return id
 
    async def getUserData(api_key, user_id):
-       verbose("PolymartAPI: getUserData() called")
        url = base_url + "/v1/getUserData"
        arg = {'api_key':api_key,'user_id':user_id}
+       verbose("PolymartAPI: getUserData() called, parameters: " + str(arg))
        async with aiohttp.ClientSession() as session:
           async with session.post(url, json=arg) as r:
               verbose("PolymartAPI: getUserData() success, JSON data: " + str(await r.text()))
               return json.loads(str(await r.text()))
 
    async def getResourceUserData(api_key, resource_id, user_id):
-       verbose("PolymartAPI: getResourceUserData() called")
        url = base_url + "/v1/getResourceUserData"
        arg = {'api_key':api_key,'resource_id':resource_id,'user_id':user_id}
+       verbose("PolymartAPI: getResourceUserData() called, parameters: " + str(arg))
        async with aiohttp.ClientSession() as session:
           async with session.post(url, json=arg) as r:
              verbose("PolymartAPI: getResourceUserData() success, JSON data: " + str(await r.text()))
@@ -118,20 +117,21 @@ class Resource:
 
 print("PolymartBase " + str(bot_version))
 print("Licensed under the permissive MIT license")
-bot = interactions.Client(token=token, presence=interactions.ClientPresence(activities=[interactions.PresenceActivity(name=activity, type=interactions.PresenceActivityType.GAME)]))
+bot = interactions.Client(token=configData['bot-token'], presence=interactions.ClientPresence(activities=[interactions.PresenceActivity(name=configData['activity'], type=interactions.PresenceActivityType.GAME)]))
 
 # Commands
 
 @bot.command(
     name="verify",
     description="Verify ownership of plugins",
-    scope=server_id
+    scope=configData['server-id']
 )
 async def verify(ctx: interactions.CommandContext):
+   verbose("Command verify triggered by " + str(ctx.author))
    channel_id = ctx.channel.id
-   if channelRestrict is not None:
-       if channelRestrict != channel_id:
-           errEmbed = interactions.Embed(description=":x: Sorry, you cannot use this command in this channel!")
+   if configData['channel-id'] is not None:
+       if configData['channel-id'] != channel_id:
+           errEmbed = interactions.Embed(description=configData['indicator']['false'] + " Sorry, you cannot use this command in this channel!")
            await ctx.send(embeds=errEmbed, ephemeral=True)
            return
    getTokenButton = interactions.Button(
@@ -158,9 +158,11 @@ async def verify(ctx: interactions.CommandContext):
 
 @bot.component("verify")
 async def verify(ctx):
+    verbose("Verify button interacted by " + str(ctx.author))
     message = ctx.message
     if ctx.author.id != message.interaction.user.id:
-       infoEmbed = interactions.Embed(description=":x: Sorry, This verification form is for " + str(message.interaction.user) + "! Please run **/verify** if you want to verify yourself.")
+       verbose("Wrong verification form interaction by " + str(ctx.author) + " form author " + str(message.interaction.user))
+       infoEmbed = interactions.Embed(description=configData['indicator']['false'] + " Sorry, This verification form is for " + str(message.interaction.user) + "! Please run **/verify** if you want to verify yourself.")
        await ctx.send(embeds=infoEmbed, ephemeral=True)
        return
     tokenInput = interactions.TextInput(
@@ -177,22 +179,26 @@ async def verify(ctx):
 
 @bot.component("cancel")
 async def cancel(ctx):
+    verbose("Cancel button interacted by " + str(ctx.author))
     message = ctx.message
     if ctx.author.id != message.interaction.user.id:
-       infoEmbed = interactions.Embed(description=":x: Sorry, This verification form is for " + str(message.interaction.user) + "! Please run **/verify** if you want to verify yourself.")
+       verbose("Wrong verification form interaction by " + str(ctx.author) + " form author " + str(message.interaction.user))
+       infoEmbed = interactions.Embed(description=configData['indicator']['false'] + " Sorry, This verification form is for " + str(message.interaction.user) + "! Please run **/verify** if you want to verify yourself.")
        await ctx.send(embeds=infoEmbed, ephemeral=True)
        return
-    embed = interactions.Embed(description=":white_check_mark: Cancelled verification for " + str(message.interaction.user) + "!")
+    verbose("Cancelled " + str(ctx.author) + " verification form")
+    embed = interactions.Embed(description=configData['indicator']['true'] + " Cancelled verification for " + str(message.interaction.user) + "!")
     await ctx.edit(embeds=embed, components=None)
-    finalEmbed = interactions.Embed(description=":white_check_mark: Cancelled successfully!")
+    finalEmbed = interactions.Embed(description=configData['indicator']['true'] + " Cancelled successfully!")
     await ctx.send(embeds=finalEmbed, ephemeral=True)
 
 @bot.modal("user_token_response")
 async def user_token_response(ctx, response: str):
+    verbose("Token received, verifying " + str(ctx.author) + "...")
     await ctx.defer()
     token = response
     member = ctx.member
-    user_name, user_id = await getUser(token, global_api_key)
+    user_name, user_id = await getUser(configData['bot-token'], configData['global-api-key'])
     base_success_text_part_1 = "Username: " + user_name + "\nUser ID: " + user_id + "\n\nStatus:"
     base_success_text_part_2 = "\n\nVerification Successfully!"
     final_success_text = ""
@@ -201,14 +207,15 @@ async def user_token_response(ctx, response: str):
         specificKey = global_api_key
         if resourceList[r].getResourceSpecificKey() is not None:
             specificKey = resourceList[r].getResourceSpecificKey()
-        final_success_text += "\n" + resourceList[r].getResourceIcon() + " **" + resourceList[r].getResourceName() + "**: " + str(await checkAndVerify(ctx, specificKey, resourceList[r].getResourceID(), token, resourceList[r].getResourceRoleID()))
+        final_success_text += "\n" + resourceList[r].getResourceIcon() + " **" + resourceList[r].getResourceName() + "**: " + str(await checkAndVerify(ctx, specificKey, resourceList[r].getResourceID(), configData['bot-token'], resourceList[r].getResourceRoleID()))
     text = base_success_text_part_1 + final_success_text + base_success_text_part_2
-    text2 = text.replace("False", ":x:")
-    text3 = text2.replace("True", ":white_check_mark:")
+    text2 = text.replace("False", configData['indicator']['false'])
+    text3 = text2.replace("True", configData['indicator']['true'])
     text4 = text3.replace("None", "")
     embed = interactions.Embed(title="Verification Summary for User " + str(ctx.author), description=text4, color=0x33a343)
     embed.set_footer(text="Requested by " + str(ctx.author) + " at " + str(datetime.datetime.now().strftime("%m/%d/%Y %H:%M")) + "  |  Bot version " + bot_version + " (" + bot_branch + ")")
-    embed.set_thumbnail(url=member.user.avatar_url)
+    if configData['display-user-avatar'] == True:
+        embed.set_thumbnail(url=member.user.avatar_url)
     await ctx.edit(embeds=embed, components=None)
     finalEmbed = interactions.Embed(description=":white_check_mark: Verified " + str(ctx.author) + " successfully!")
     await ctx.send(embeds=finalEmbed)

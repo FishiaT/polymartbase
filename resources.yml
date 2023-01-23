@@ -12,9 +12,9 @@ example:
   # Role ID that the bot will give if user successfully verified
   discord-role-id: 00000000000000
 
-  # Icon for your resorce as a Discord emoji ID
+  # Discord emoji as resource icon
+  # See config.yml indicators to know what to use
   # Leave this empty to disable
-  # To get the ID of the emoji, type a \ before the emoji
   icon: "emoji here"
 
   # Resource specific API Key
