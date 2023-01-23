@@ -98,7 +98,9 @@ class Resource:
 
 print("PolymartBase " + str(bot_version))
 print("Licensed under the permissive MIT license")
-bot = interactions.Client(token=configData['bot-token'], presence=interactions.ClientPresence(activities=[interactions.PresenceActivity(name=configData['activity'], type=interactions.PresenceActivityType.GAME)]))
+bot = interactions.Client(token=configData['bot-token'])
+if configData['activity'] is not None:
+    bot = interactions.Client(token=configData['bot-token'], presence=interactions.ClientPresence(activities=[interactions.PresenceActivity(name=configData['activity'], type=interactions.PresenceActivityType.GAME)]))
 
 # Commands
 
