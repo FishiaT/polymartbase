@@ -109,13 +109,13 @@ if configData['activity'] is not None:
     scope=configData['server-id']
 )
 async def reload(ctx: interactions.CommandContext):
-    verbose("Reload command triggered by " + str(ctx.author))
+    verbose("Reload command triggered by " + str(ctx.author.name) + "#" + str(ctx.author.discriminator))
     configData = yaml1.load(Path('config.yml'))
     resourceData = yaml1.load(Path('resources.yml'))
     infoEmbed = interactions.Embed(description=configData['indicator']['yessir'] + " Reload config files successfully!", color=0x33a343)
-    infoEmbed.set_footer(text="Requested by " + str(ctx.author) + " at " + str(datetime.datetime.now().strftime("%m/%d/%Y %H:%M")) + "  |  Bot version " + bot_version + " (" + bot_branch + ")")
+    infoEmbed.set_footer(text="Requested by " + str(ctx.author.name) + "#" + str(ctx.author.discriminator) + " at " + str(datetime.datetime.now().strftime("%m/%d/%Y %H:%M")) + "  |  Bot version " + bot_version + " (" + bot_branch + ")")
     await ctx.send(embeds=infoEmbed, ephemeral=True)
-    verbose("Reload command success for " + str(ctx.author))
+    verbose("Reload command success for " + str(ctx.author.name) + "#" + str(ctx.author.discriminator))
 
 @bot.command(
     name="verify",
@@ -123,7 +123,7 @@ async def reload(ctx: interactions.CommandContext):
     scope=configData['server-id']
 )
 async def verify(ctx: interactions.CommandContext):
-   verbose("Verify command triggered by " + str(ctx.author))
+   verbose("Verify command triggered by " + str(ctx.author.name) + "#" + str(ctx.author.discriminator))
    channel_id = ctx.channel.id
    if configData['channel-id'] is not None:
        if configData['channel-id'] != channel_id:
@@ -148,13 +148,13 @@ async def verify(ctx: interactions.CommandContext):
    row = interactions.ActionRow(
     components=[getTokenButton, verifyButton, cancelButton]
    )
-   infoEmbed = interactions.Embed(title="Hi there!", description="Hi there " + str(ctx.author) + "! This form is here to help you get started! \n\nTo get started, click the **Get Token** button and it will automatically open a link. \nLogin into your Polymart account and it will generate a token. \nCopy that token and click the **Verify** button, enter your token and let the bot handle the rest! \n\nIf you have bought a plugin after verification and would like to get verified for that plugin, just do verify again! \n\nIf you ran this command by accident, click to the **Cancel** button to cancel this form.", color=0x33a343)
-   infoEmbed.set_footer(text="Requested by " + str(ctx.author) + " at " + str(datetime.datetime.now().strftime("%m/%d/%Y %H:%M")) + "  |  Bot version " + bot_version + " (" + bot_branch + ")")
+   infoEmbed = interactions.Embed(title="Hi there!", description="Hi there " + str(ctx.author.name) + "#" + str(ctx.author.discriminator) + "! This form is here to help you get started! \n\nTo get started, click the **Get Token** button and it will automatically open a link. \nLogin into your Polymart account and it will generate a token. \nCopy that token and click the **Verify** button, enter your token and let the bot handle the rest! \n\nIf you have bought a plugin after verification and would like to get verified for that plugin, just do verify again! \n\nIf you ran this command by accident, click to the **Cancel** button to cancel this form.", color=0x33a343)
+   infoEmbed.set_footer(text="Requested by " + str(ctx.author.name) + "#" + str(ctx.author.discriminator) + " at " + str(datetime.datetime.now().strftime("%m/%d/%Y %H:%M")) + "  |  Bot version " + bot_version + " (" + bot_branch + ")")
    await ctx.send(embeds=infoEmbed, components=row, ephemeral=True)
 
 @bot.component("verify")
 async def verify(ctx):
-    verbose("Verify button interacted by " + str(ctx.author))
+    verbose("Verify button interacted by " + str(ctx.author.name) + "#" + str(ctx.author.discriminator))
     tokenInput = interactions.TextInput(
         style=interactions.TextStyleType.SHORT,
         label="Enter your Polymart token",
@@ -169,7 +169,7 @@ async def verify(ctx):
 
 @bot.component("cancel")
 async def cancel(ctx):
-    verbose("Cancelled " + str(ctx.author) + " verification form")
+    verbose("Cancelled " + str(ctx.author.name) + "#" + str(ctx.author.discriminator) + " verification form")
     embed = interactions.Embed(description=configData['indicator']['yessir'] + " Cancelled verification for " + str(message.interaction.user) + "!")
     await ctx.send(embeds=embed, components=None)
     #finalEmbed = interactions.Embed(description=configData['indicator']['yessir'] + " Cancelled successfully!")
@@ -177,7 +177,7 @@ async def cancel(ctx):
 
 @bot.modal("user_token_response")
 async def user_token_response(ctx, response: str):
-    verbose("Token received, verifying " + str(ctx.author) + "...")
+    verbose("Token received, verifying " + str(ctx.author.name) + "#" + str(ctx.author.discriminator) + "...")
     await ctx.defer()
     resourcesCount = 0
     ownedResources = 0
@@ -190,7 +190,7 @@ async def user_token_response(ctx, response: str):
     final_success_text = ""
     await getAllResources()
     for r in resourceList:
-        verbose("Checking ownership of resource " + str(resourceList[r].getResourceName()) + " for " + str(ctx.author) + "...")
+        verbose("Checking ownership of resource " + str(resourceList[r].getResourceName()) + " for " + str(ctx.author.name) + "#" + str(ctx.author.discriminator) + "...")
         resourcesCount += 1
         specificKey = configData['global-api-key']
         if resourceList[r].getResourceSpecificKey() is not None:
@@ -198,22 +198,22 @@ async def user_token_response(ctx, response: str):
         ownershipStatus = await checkAndVerify(ctx, specificKey, resourceList[r].getResourceID(), token, resourceList[r].getResourceRoleID())
         if ownershipStatus == True:
             ownedResources += 1
-            verbose(str(ctx.author) + " owns resource " + str(resourceList[r].getResourceName()))
+            verbose(str(ctx.author.name) + "#" + str(ctx.author.discriminator) + " owns resource " + str(resourceList[r].getResourceName()))
         final_success_text += "\n" + resourceList[r].getResourceIcon() + " **" + resourceList[r].getResourceName() + "**: " + str(ownershipStatus)
-        verbose("Finished checking ownership of resource " + str(resourceList[r].getResourceName()) + " for " + str(ctx.author) + "!")
+        verbose("Finished checking ownership of resource " + str(resourceList[r].getResourceName()) + " for " + str(ctx.author.name) + "#" + str(ctx.author.discriminator) + "!")
     text = base_success_text_part_1 + final_success_text + base_success_text_part_2
     text2 = text.replace("False", configData['indicator']['nop'])
     text3 = text2.replace("True", configData['indicator']['yessir'])
     text4 = text3.replace("None", "")
-    verbose("Summary for " + str(ctx.author) + ": owned " + str(ownedResources) + "/" + str(resourcesCount))
-    embed = interactions.Embed(title="Verification Summary for User " + str(ctx.author), description=text4, color=0x33a343)
-    embed.set_footer(text="Requested by " + str(ctx.author) + " at " + str(datetime.datetime.now().strftime("%m/%d/%Y %H:%M")) + "  |  Bot version " + bot_version + " (" + bot_branch + ")")
+    verbose("Summary for " + str(ctx.author.name) + "#" + str(ctx.author.discriminator) + ": owned " + str(ownedResources) + "/" + str(resourcesCount))
+    embed = interactions.Embed(title="Verification Summary for User " + str(ctx.author.name) + "#" + str(ctx.author.discriminator), description=text4, color=0x33a343)
+    embed.set_footer(text="Requested by " + str(ctx.author.name) + "#" + str(ctx.author.discriminator) + " at " + str(datetime.datetime.now().strftime("%m/%d/%Y %H:%M")) + "  |  Bot version " + bot_version + " (" + bot_branch + ")")
     if configData['display-user-avatar'] == True:
         embed.set_thumbnail(url=member.user.avatar_url)
-    verbose("Deleting previous verification form for " + str(ctx.author))
+    verbose("Deleting previous verification form for " + str(ctx.author.name) + "#" + str(ctx.author.discriminator))
     await ctx.delete()
     await ctx.send(embeds=embed, components=None)
-    verbose("Verify command success for " + str(ctx.author))
+    verbose("Verify command success for " + str(ctx.author.name) + "#" + str(ctx.author.discriminator))
     
 async def getUser(user_token, api_key):
     verbose("getUser() called, parameters: " + str(user_token) + ", " + str(api_key))
