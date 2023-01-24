@@ -1,14 +1,22 @@
 # This is the main configuration file for PolymartBase
-# Change the values accordingly to your server.
+# Change the values accordingly to your server
+
+# WHEN CREATING THE BOT THOUGH DISCORD DEVELOPER PORTAL
+# MAKE SURE TO ENABLE "bot" AND "application.commands" SCOPE
+# OTHERWISE THE BOT WON'T WORK
+
+# Polymart API base url
+# The bot won't work if this is incorrect
+base-url: "https://api.polymart.org"
 
 # Your Discord bot token
-discord-bot-token: "TOKEN"
+bot-token: "TOKEN"
 
 # Your Discord server ID
-discord-server-id: 0000000
+server-id: 0000000
 
 # Global Polymart API Key
-# Used for fetching Username, User ID and default if there is no product-specific api key specified
+# Used to fetch user name and user ID
 global-api-key: "API KEY HERE"
 
 # Your service name
@@ -16,9 +24,29 @@ global-api-key: "API KEY HERE"
 service: "ExampleService"
 
 # Bot activity
-# Will be shown as Playing <activitys>
-activity: "/verify"
+# Will be shown as Playing <activity>
+# Leave empty to disable
+activity: "Change me"
 
 # Specify this if you want the /verify command to only be able to used in a specific channel
-# Discord channel ID, leave this empty to disable it
-channel: 
+# Discord channel ID, leave this empty to disable
+channel-id: 0000
+
+# Display user avatar on verification summary
+display-user-avatar: true
+
+# Emoji indicators, will be used in anything
+# For built in emojis, use standard name (i.e. :smile:)
+# For external emojis, use emoji ID
+# To get the ID of the emoji, type \ before the emoji
+indicator:
+  # Workaround a funny "bug"?
+  yessir: ":white_check_mark:"
+  nop: ":x:"
+
+# Useful for debugging
+debug:
+  # Print verbose log to the bot's console
+  # It will print all of bot activitiies like api calls and just internal stuff
+  # Your console might get spammed, but its useful to see what's happening behind the scene
+  verbose: false
