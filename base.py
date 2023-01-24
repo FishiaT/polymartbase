@@ -21,9 +21,7 @@ resourceData = yaml1.load(Path('resources.yml'))
 bot_version = "3.2.0-beta"
 
 # Git branch and whether it is open source or closed source
-# bot_branch = "oss/3.2.0"
-# Temporary branch to note that this is an unstable version that is used to test
-bot_branch = "UNSTABLE VERSION, REPORT ANY BUGS YOU MET"
+bot_branch = "oss/3.2.0"
 
 # Used internally
 resourceList = {}
@@ -187,7 +185,8 @@ async def user_token_response(ctx, response: str):
     member = ctx.member
     user_name, user_id = await getUser(response, configData['global-api-key'])
     base_success_text_part_1 = "Username: " + user_name + "\nUser ID: " + user_id + "\n\nStatus:"
-    base_success_text_part_2 = "\n\nVerification Successfully!"
+    #base_success_text_part_2 = "\n\nVerification Successfully!"
+    base_success_text_part_2 = "\n\nVerification Successfully!\n\n\nNOTE: This version of the bot is currently in beta and bugs may occur.\nPlease report any bugs you met."
     final_success_text = ""
     await getAllResources()
     for r in resourceList:
