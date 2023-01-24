@@ -186,7 +186,7 @@ async def user_token_response(ctx, response: str):
     user_name, user_id = await getUser(response, configData['global-api-key'])
     base_success_text_part_1 = "Username: " + user_name + "\nUser ID: " + user_id + "\n\nStatus:"
     #base_success_text_part_2 = "\n\nVerification Successfully!"
-    base_success_text_part_2 = "\n\nVerification Successfully!\n\n\nNOTE: This version of the bot is currently in beta and bugs may occur.\nPlease report any bugs you met."
+    base_success_text_part_2 = "\n\nVerification Successfully!\n\n\nNOTE: This version of the bot is currently in beta and bugs may occur. Please report any bugs you met."
     final_success_text = ""
     await getAllResources()
     for r in resourceList:
@@ -195,7 +195,7 @@ async def user_token_response(ctx, response: str):
         specificKey = configData['global-api-key']
         if resourceList[r].getResourceSpecificKey() is not None:
             specificKey = resourceList[r].getResourceSpecificKey()
-        ownershipStatus = await checkAndVerify(ctx, specificKey, resourceList[r].getResourceID(), configData['bot-token'], resourceList[r].getResourceRoleID())
+        ownershipStatus = await checkAndVerify(ctx, specificKey, resourceList[r].getResourceID(), token, resourceList[r].getResourceRoleID())
         if ownershipStatus == True:
             ownedResources += 1
             verbose(str(ctx.author) + " owns resource " + str(resourceList[r].getResourceName()))
@@ -210,8 +210,10 @@ async def user_token_response(ctx, response: str):
     embed.set_footer(text="Requested by " + str(ctx.author) + " at " + str(datetime.datetime.now().strftime("%m/%d/%Y %H:%M")) + "  |  Bot version " + bot_version + " (" + bot_branch + ")")
     if configData['display-user-avatar'] == True:
         embed.set_thumbnail(url=member.user.avatar_url)
+    verbose("Deleting previous verification form for " + str(ctx.author))
+    await ctx.delete()
     await ctx.send(embeds=embed, components=None)
-    verbose("Verify command success for " + (ctx.author))
+    verbose("Verify command success for " + str(ctx.author))
     
 async def getUser(user_token, api_key):
     verbose("getUser() called, parameters: " + str(user_token) + ", " + str(api_key))
