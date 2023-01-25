@@ -169,7 +169,8 @@ async def user_token_response(ctx, response: str):
     resourcesCount = 0
     ownedResources = 0
     member = ctx.member
-    user_name, user_id = await getUser(response, configData['global-api-key'])
+    user_data = await PolymartAPI.getUserData(api_key, user_id)
+    user_name, user_id = await getUser(response, configData['global-api-key'], user_data)
     base_success_text_part_1 = "Username: " + user_name + "\nUser ID: " + user_id + "\n\nStatus:"
     base_success_text_part_2 = "\n\nVerification Successfully!"
     final_success_text = ""
@@ -180,7 +181,7 @@ async def user_token_response(ctx, response: str):
         specificKey = configData['global-api-key']
         if resourceList[r].getResourceSpecificKey() is not None:
             specificKey = resourceList[r].getResourceSpecificKey()
-        ownershipStatus = await checkAndVerify(ctx, specificKey, resourceList[r].getResourceID(), response, resourceList[r].getResourceRoleID())
+        ownershipStatus = await checkAndVerify(ctx, specificKey, resourceList[r].getResourceID(), response, resourceList[r].getResourceRoleID(), user_data)
         if ownershipStatus == True:
             ownedResources += 1
             verbose(str(ctx.author.name) + "#" + str(ctx.author.discriminator) + " owns resource " + str(resourceList[r].getResourceName()))
@@ -200,18 +201,16 @@ async def user_token_response(ctx, response: str):
     await ctx.send(embeds=embed)
     verbose("Verify command success for " + str(ctx.author.name) + "#" + str(ctx.author.discriminator))
     
-async def getUser(user_token, api_key):
+async def getUser(user_token, api_key, user_data):
     verbose("getUser() called, parameters: " + str(user_token) + ", " + str(api_key))
     user_id = await PolymartAPI.verifyUser(user_token)
-    user_data = await PolymartAPI.getUserData(api_key, user_id)
     user_name = user_data['response']['user']['username']
     verbose("getUser() success, results: " + str(user_name) + ", " + str(user_id))
     return user_name, user_id
     
-async def checkAndVerify(context, api_key, resource_id, user_token, verified_role_id):
+async def checkAndVerify(context, api_key, resource_id, user_token, verified_role_id, user_data):
     verbose("checkAndVerify() called, parameters: " + str(api_key) + ", " + str(resource_id) + ", " + str(user_token) + ", " + str(verified_role_id))
     user_id = await PolymartAPI.verifyUser(user_token)
-    user_data = await PolymartAPI.getUserData(api_key, user_id)
     resource_user_data = await PolymartAPI.getResourceUserData(api_key, resource_id, user_id)
     if context.author.roles and verified_role_id not in context.author.roles or not context.author.roles:
         if resource_user_data['response']['resource']['purchaseValid']:
