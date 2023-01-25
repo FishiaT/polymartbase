@@ -217,7 +217,7 @@ async def checkAndVerify(context, api_key, resource_id, user_token, verified_rol
     if context.author.roles and verified_role_id not in context.author.roles or not context.author.roles:
         if resource_user_data['response']['resource']['purchaseValid']:
             verbose("checkAndVerify() success, adding role...")
-            await context.author.add_role(verified_role_id, server_id)
+            await context.author.add_role(verified_role_id, configData['server-id'])
             return True
         else:
             verbose("checkAndVerify() success")
