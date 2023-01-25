@@ -18,7 +18,7 @@ resourceData = yaml1.load(Path('resources.yml'))
 
 # Bot version
 # i'm a bit fucked with versioning rn
-bot_version = "3.2.0"
+bot_version = "3.2.1"
 
 # Git branch and whether it is open source or closed source
 bot_branch = "oss/main"
@@ -168,7 +168,6 @@ async def user_token_response(ctx, response: str):
     await ctx.defer()
     resourcesCount = 0
     ownedResources = 0
-    token = response
     member = ctx.member
     user_name, user_id = await getUser(response, configData['global-api-key'])
     base_success_text_part_1 = "Username: " + user_name + "\nUser ID: " + user_id + "\n\nStatus:"
@@ -181,7 +180,7 @@ async def user_token_response(ctx, response: str):
         specificKey = configData['global-api-key']
         if resourceList[r].getResourceSpecificKey() is not None:
             specificKey = resourceList[r].getResourceSpecificKey()
-        ownershipStatus = await checkAndVerify(ctx, specificKey, resourceList[r].getResourceID(), token, resourceList[r].getResourceRoleID())
+        ownershipStatus = await checkAndVerify(ctx, specificKey, resourceList[r].getResourceID(), response, resourceList[r].getResourceRoleID())
         if ownershipStatus == True:
             ownedResources += 1
             verbose(str(ctx.author.name) + "#" + str(ctx.author.discriminator) + " owns resource " + str(resourceList[r].getResourceName()))
