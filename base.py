@@ -18,7 +18,7 @@ resourceData = yaml1.load(Path('resources.yml'))
 
 # Bot version
 # i'm a bit fucked with versioning rn
-bot_version = "3.2.1"
+bot_version = "3.2.2"
 
 # Git branch and whether it is open source or closed source
 bot_branch = "oss/main"
@@ -112,9 +112,9 @@ async def reload(ctx: interactions.CommandContext):
     verbose("Reload command triggered by " + str(ctx.author.name) + "#" + str(ctx.author.discriminator))
     configData = yaml1.load(Path('config.yml'))
     resourceData = yaml1.load(Path('resources.yml'))
-    infoEmbed = interactions.Embed(description=configData['indicator']['yessir'] + " Reload config files successfully!", color=0x33a343)
-    infoEmbed.set_footer(text="Requested by " + str(ctx.author.name) + "#" + str(ctx.author.discriminator) + " at " + str(datetime.datetime.now().strftime("%m/%d/%Y %H:%M")) + "  |  Bot version " + bot_version + " (" + bot_branch + ")")
-    await ctx.send(embeds=infoEmbed, ephemeral=True)
+    reloadEmbed = interactions.Embed(description=configData['indicator']['yessir'] + " Reload config files successfully!", color=0x33a343)
+    reloadEmbed.set_footer(text="Requested by " + str(ctx.author.name) + "#" + str(ctx.author.discriminator) + " at " + str(datetime.datetime.now().strftime("%m/%d/%Y %H:%M")) + "  |  Bot version " + bot_version + " (" + bot_branch + ")")
+    await ctx.send(embeds=reloadEmbed, ephemeral=True)
     verbose("Reload command success for " + str(ctx.author.name) + "#" + str(ctx.author.discriminator))
 
 @bot.command(
@@ -169,9 +169,8 @@ async def user_token_response(ctx, response: str):
     resourcesCount = 0
     ownedResources = 0
     member = ctx.member
-    user_id = await PolymartAPI.verifyUser(user_token)
+    user_id = await PolymartAPI.verifyUser(response)
     user_data = await PolymartAPI.getUserData(configData['global-api-key'], user_id)
-    verbose("User data for " + str(ctx.author.name) + "#" + str(ctx.author.discriminator) + ": " + str(user_data))
     user_name = await getUser(response, configData['global-api-key'], user_data)
     base_success_text_part_1 = "Username: " + user_name + "\nUser ID: " + user_id + "\n\nStatus:"
     base_success_text_part_2 = "\n\nVerification Successfully!"
@@ -198,14 +197,12 @@ async def user_token_response(ctx, response: str):
     embed.set_footer(text="Requested by " + str(ctx.author.name) + "#" + str(ctx.author.discriminator) + " at " + str(datetime.datetime.now().strftime("%m/%d/%Y %H:%M")) + "  |  Bot version " + bot_version + " (" + bot_branch + ")")
     if configData['display-user-avatar'] == True:
         embed.set_thumbnail(url=member.user.avatar_url)
-    verbose("Deleting previous verification form for " + str(ctx.author.name) + "#" + str(ctx.author.discriminator))
-    await ctx.edit("test")
     await ctx.send(embeds=embed)
     verbose("Verify command success for " + str(ctx.author.name) + "#" + str(ctx.author.discriminator))
     
 async def getUser(user_token, api_key, user_data):
     verbose("getUser() called, parameters: " + str(user_token) + ", " + str(api_key))
-    verbose("getUser() success, results: " + str(user_name))
+    verbose("getUser() success, results: " + str(user_data['response']['user']['username']))
     return user_data['response']['user']['username']
     
 async def checkAndVerify(context, api_key, resource_id, user_token, verified_role_id, user_data, user_id):
