@@ -171,6 +171,7 @@ async def user_token_response(ctx, response: str):
     member = ctx.member
     user_id = await PolymartAPI.verifyUser(user_token)
     user_data = await PolymartAPI.getUserData(configData['global-api-key'], user_id)
+    verbose("User data for " + str(ctx.author.name) + "#" + str(ctx.author.discriminator) + ": " + str(user_data))
     user_name = await getUser(response, configData['global-api-key'], user_data)
     base_success_text_part_1 = "Username: " + user_name + "\nUser ID: " + user_id + "\n\nStatus:"
     base_success_text_part_2 = "\n\nVerification Successfully!"
