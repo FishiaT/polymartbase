@@ -5,8 +5,6 @@
 # MAKE SURE TO ENABLE "bot" AND "application.commands" SCOPE
 # OTHERWISE THE BOT WON'T WORK
 
-# Use /reload command to reload the config files without restarting the bot
-
 # PolymartBase have a few info placeholders for bot version, date, etc
 # You can use these placeholders the layout customization
 
