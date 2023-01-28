@@ -1,7 +1,7 @@
 # PolymartBase
 # Licensed under MIT license
 
-# Code is not-so-great, but it works!
+# Powered by terrible code written by a dumb weeb
 
 from ruamel import yaml
 from pathlib import Path
@@ -18,58 +18,54 @@ resourceData = yaml1.load(Path('resources.yml'))
 
 # Bot version
 # i'm a bit fucked with versioning rn
-bot_version = "3.2.2"
+bot_version = "3.2.3"
 
 # Git branch and whether it is open source or closed source
 bot_branch = "oss/main"
-
-# Used internally
-resourceList = {}
-
-def verbose(msg):
-    if configData['debug']['verbose'] == True:
-        time = datetime.datetime.now().strftime('%H:%M:%S')
-        print("[" + str(time) + " - VERBOSE] " + msg)
 
 class PolymartAPI:
    async def generateVerifyURL():
        url = configData['base-url'] + "/v1/generateUserVerifyURL"
        arg = {'service':configData['service']}
-       verbose("PolymartAPI: generateVerifyURL() called, parameters: " + str(arg))
        token = None
        async with aiohttp.ClientSession() as session:
           async with session.get(url, json=arg) as r:
              token = json.loads(str(await r.text()))['response']['result']['url']
-             verbose("PolymartAPI: generateVerifyURL() success, token: " + str(token))
              return token
 
    async def verifyUser(token):
        url = configData['base-url'] + "/v1/verifyUser"
        arg = {'service':configData['service'],'token':token}
-       verbose("PolymartAPI: verifyUser() called, parameters: " + str(arg))
        async with aiohttp.ClientSession() as session:
           async with session.get(url, json=arg) as r:
              id = json.loads(str(await r.text()))['response']['result']['user']['id']
-             verbose("PolymartAPI: verifyUser() success, ID: " + str(id))
              return id
 
    async def getUserData(api_key, user_id):
        url = configData['base-url'] + "/v1/getUserData"
        arg = {'api_key':api_key,'user_id':user_id}
-       verbose("PolymartAPI: getUserData() called, parameters: " + str(arg))
        async with aiohttp.ClientSession() as session:
           async with session.post(url, json=arg) as r:
-              verbose("PolymartAPI: getUserData() success, JSON data: " + str(await r.text()))
               return json.loads(str(await r.text()))
 
    async def getResourceUserData(api_key, resource_id, user_id):
        url = configData['base-url'] + "/v1/getResourceUserData"
        arg = {'api_key':api_key,'resource_id':resource_id,'user_id':user_id}
-       verbose("PolymartAPI: getResourceUserData() called, parameters: " + str(arg))
        async with aiohttp.ClientSession() as session:
           async with session.post(url, json=arg) as r:
-             verbose("PolymartAPI: getResourceUserData() success, JSON data: " + str(await r.text()))
              return json.loads(str(await r.text()))
+
+   async def getAccountType(user_id):
+       url = configData['base-url'] + "/v1/getAccountInfo"
+       arg = {'user_id':user_id}
+       async with aiohttp.ClientSession() as session:
+          async with session.post(url, json=arg) as r:
+             try:
+                # why tf do you need to do this
+                # the type property is enough lol
+                return json.loads(str(await r.text()))['response']['user']['type']
+             except:
+                return json.loads(str(await r.text()))['response']['team']['type']
 
 class Resource:
     resourceName = None
@@ -94,6 +90,9 @@ class Resource:
     def getResourceSpecificKey(self):
         return self.resourceSpecificKey
 
+def parsePlaceholder(ctx, string):
+    return string.replace("%version%", bot_version).replace("%branch%", bot_branch).replace("%date%", str(datetime.datetime.now().strftime("%m/%d/%Y %H:%M"))).replace("%user_name%", str(ctx.author.name)).replace("%user_discriminator%", str(ctx.author.discriminator)).replace("%user_full%", str(ctx.author.name) + "#" + str(ctx.author.discriminator))
+
 print("PolymartBase " + str(bot_version))
 print("Licensed under the permissive MIT license")
 bot = interactions.Client(token=configData['bot-token'])
@@ -103,31 +102,15 @@ if configData['activity'] is not None:
 # Commands
 
 @bot.command(
-    name="reload",
-    description="Reload config files",
-    default_member_permissions=interactions.Permissions.ADMINISTRATOR,
-    scope=configData['server-id']
-)
-async def reload(ctx: interactions.CommandContext):
-    verbose("Reload command triggered by " + str(ctx.author.name) + "#" + str(ctx.author.discriminator))
-    configData = yaml1.load(Path('config.yml'))
-    resourceData = yaml1.load(Path('resources.yml'))
-    reloadEmbed = interactions.Embed(description=configData['indicator']['yessir'] + " Reload config files successfully!", color=0x33a343)
-    reloadEmbed.set_footer(text="Requested by " + str(ctx.author.name) + "#" + str(ctx.author.discriminator) + " at " + str(datetime.datetime.now().strftime("%m/%d/%Y %H:%M")) + "  |  Bot version " + bot_version + " (" + bot_branch + ")")
-    await ctx.send(embeds=reloadEmbed, ephemeral=True)
-    verbose("Reload command success for " + str(ctx.author.name) + "#" + str(ctx.author.discriminator))
-
-@bot.command(
     name="verify",
     description="Verify ownership of plugins",
     scope=configData['server-id']
 )
 async def verify(ctx: interactions.CommandContext):
-   verbose("Verify command triggered by " + str(ctx.author.name) + "#" + str(ctx.author.discriminator))
    channel_id = ctx.channel.id
    if configData['channel-id'] is not None:
        if configData['channel-id'] != channel_id:
-           errEmbed = interactions.Embed(description=configData['indicator']['nop'] + " Sorry, you cannot use this command in this channel!")
+           errEmbed = interactions.Embed(description=configData['indicator']['x'] + " Sorry, you cannot use this command in this channel!")
            await ctx.send(embeds=errEmbed, ephemeral=True)
            return
    getTokenButton = interactions.Button(
@@ -138,18 +121,17 @@ async def verify(ctx: interactions.CommandContext):
    verifyButton = interactions.Button(
         style=interactions.ButtonStyle.SUCCESS,
         label="Verify",
-        custom_id="verify"
+        custom_id="verify_c"
    )
    row = interactions.ActionRow(
     components=[getTokenButton, verifyButton]
    )
    infoEmbed = interactions.Embed(title="Hi there!", description="Hi there " + str(ctx.author.name) + "#" + str(ctx.author.discriminator) + "! This form is here to help you get started! \n\nTo get started, click the **Get Token** button and it will automatically open a link. \nLogin into your Polymart account and it will generate a token. \nCopy that token and click the **Verify** button, enter your token and let the bot handle the rest! \n\nIf you have bought a plugin after verification and would like to get verified for that plugin, just do verify again!", color=0x33a343)
-   infoEmbed.set_footer(text="Requested by " + str(ctx.author.name) + "#" + str(ctx.author.discriminator) + " at " + str(datetime.datetime.now().strftime("%m/%d/%Y %H:%M")) + "  |  Bot version " + bot_version + " (" + bot_branch + ")")
+   infoEmbed.set_footer(text=parsePlaceholder(ctx, configData['layout']['footer']))
    await ctx.send(embeds=infoEmbed, components=row, ephemeral=True)
 
-@bot.component("verify")
-async def verify(ctx):
-    verbose("Verify button interacted by " + str(ctx.author.name) + "#" + str(ctx.author.discriminator))
+@bot.component("verify_c")
+async def verify_component(ctx):
     tokenInput = interactions.TextInput(
         style=interactions.TextStyleType.SHORT,
         label="Enter your Polymart token",
@@ -164,68 +146,62 @@ async def verify(ctx):
 
 @bot.modal("user_token_response")
 async def user_token_response(ctx, response: str):
-    verbose("Token received, verifying " + str(ctx.author.name) + "#" + str(ctx.author.discriminator) + "...")
     await ctx.defer()
-    resourcesCount = 0
-    ownedResources = 0
+    resourceList = await getAllResources()
     member = ctx.member
     user_id = await PolymartAPI.verifyUser(response)
     user_data = await PolymartAPI.getUserData(configData['global-api-key'], user_id)
     user_name = await getUser(response, configData['global-api-key'], user_data)
-    base_success_text_part_1 = "Username: " + user_name + "\nUser ID: " + user_id + "\n\nStatus:"
-    base_success_text_part_2 = "\n\nVerification Successfully!"
-    final_success_text = ""
-    await getAllResources()
-    for r in resourceList:
-        verbose("Checking ownership of resource " + str(resourceList[r].getResourceName()) + " for " + str(ctx.author.name) + "#" + str(ctx.author.discriminator) + "...")
-        resourcesCount += 1
-        specificKey = configData['global-api-key']
-        if resourceList[r].getResourceSpecificKey() is not None:
-            specificKey = resourceList[r].getResourceSpecificKey()
-        ownershipStatus = await checkAndVerify(ctx, specificKey, resourceList[r].getResourceID(), response, resourceList[r].getResourceRoleID(), user_data, user_id)
-        if ownershipStatus == True:
-            ownedResources += 1
-            verbose(str(ctx.author.name) + "#" + str(ctx.author.discriminator) + " owns resource " + str(resourceList[r].getResourceName()))
-        final_success_text += "\n" + resourceList[r].getResourceIcon() + " **" + resourceList[r].getResourceName() + "**: " + str(ownershipStatus)
-        verbose("Finished checking ownership of resource " + str(resourceList[r].getResourceName()) + " for " + str(ctx.author.name) + "#" + str(ctx.author.discriminator) + "!")
-    text = base_success_text_part_1 + final_success_text + base_success_text_part_2
-    text2 = text.replace("False", configData['indicator']['nop'])
-    text3 = text2.replace("True", configData['indicator']['yessir'])
-    text4 = text3.replace("None", "")
-    verbose("Summary for " + str(ctx.author.name) + "#" + str(ctx.author.discriminator) + ": owned " + str(ownedResources) + "/" + str(resourcesCount))
-    embed = interactions.Embed(title="Verification Summary for User " + str(ctx.author.name) + "#" + str(ctx.author.discriminator), description=text4, color=0x33a343)
-    embed.set_footer(text="Requested by " + str(ctx.author.name) + "#" + str(ctx.author.discriminator) + " at " + str(datetime.datetime.now().strftime("%m/%d/%Y %H:%M")) + "  |  Bot version " + bot_version + " (" + bot_branch + ")")
-    if configData['display-user-avatar'] == True:
+    base_first = ""
+    base_final = ""
+    final_text = ""
+    embed = interactions.Embed(title=parsePlaceholder(ctx, configData['layout']['title']), color=0x33a343)
+    embed.set_footer(text=parsePlaceholder(ctx, configData['layout']['footer']))
+    if configData['layout']['display-user-avatar'] == True:
         embed.set_thumbnail(url=member.user.avatar_url)
+    if configData['layout']['mode'] == "new":
+        embed.add_field(name="**User Name**", value=user_name, inline=True)
+        embed.add_field(name="**User ID**", value=str(user_id), inline=True)
+        embed.add_field(name="**Date**", value=str(datetime.datetime.now().strftime("%m/%d/%Y %H:%M")), inline=True)
+    elif configData['layout']['mode'] == "default":
+        base_first = "Username: " + user_name + "\nUser ID: " + user_id + "\n\nStatus:"
+        base_final = "\n\nVerified Successfully!"
+    for r in resourceList:
+        specificKey = configData.get('global-api-key', None) or resourceList[r].getResourceSpecificKey()
+        ownershipStatus = await checkAndVerify(ctx, specificKey, resourceList[r].getResourceID(), response, resourceList[r].getResourceRoleID(), user_data, user_id)
+        if configData['layout']['mode'] == "new" and ownershipStatus:
+            final_text += resourceList[r].getResourceIcon() + " " + resourceList[r].getResourceName() + "\n"
+        elif configData['layout']['mode'] == "default":
+            final_text += "\n" + resourceList[r].getResourceIcon() + " **" + resourceList[r].getResourceName() + "**: " + str(ownershipStatus)
+    if configData['layout']['mode'] == "new":
+        embed.add_field(name="**Owned**", value=final_text)
+        embed.add_field(name="Verified Successfully!", value="")
+        embed.description = "• Discord: " + str(ctx.author.name) + "#" + str(ctx.author.discriminator) + "\n• Account Type: " + str(await PolymartAPI.getAccountType(user_id)).replace("user", "User").replace("team", "Team")
+    elif configData['layout']['mode'] == "default":
+        text = base_first + final_text + base_final
+        embed.description = text.replace("False", configData['indicator']['x']).replace("True", configData['indicator']['check_mark']).replace("None", "")
     await ctx.send(embeds=embed)
-    verbose("Verify command success for " + str(ctx.author.name) + "#" + str(ctx.author.discriminator))
     
 async def getUser(user_token, api_key, user_data):
-    verbose("getUser() called, parameters: " + str(user_token) + ", " + str(api_key))
-    verbose("getUser() success, results: " + str(user_data['response']['user']['username']))
     return user_data['response']['user']['username']
     
 async def checkAndVerify(context, api_key, resource_id, user_token, verified_role_id, user_data, user_id):
-    verbose("checkAndVerify() called, parameters: " + str(api_key) + ", " + str(resource_id) + ", " + str(user_token) + ", " + str(verified_role_id) + ", " + str(user_id))
     resource_user_data = await PolymartAPI.getResourceUserData(api_key, resource_id, user_id)
     if context.author.roles and verified_role_id not in context.author.roles or not context.author.roles:
         if resource_user_data['response']['resource']['purchaseValid']:
-            verbose("checkAndVerify() success, adding role...")
             await context.author.add_role(verified_role_id, configData['server-id'])
             return True
         else:
-            verbose("checkAndVerify() success")
             return False
     elif context.author.roles and verified_role_id in context.author.roles:
-        verbose("checkAndVerify() success")
         return True
 
 async def getAllResources():
-    verbose("getAllResources() called")
+    resourceList = {}
     for r in resourceData:
         resource = resourceData[r]
         resourceConf = Resource(resource['resource-name'], resource['resource-id'], resource['role-id'], resource['icon'], resource['api-key'])
         resourceList[r] = resourceConf
-    verbose("getAllResources() success")
+    return resourceList
             
 bot.start()
