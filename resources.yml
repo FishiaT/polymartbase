@@ -1,7 +1,7 @@
 # Resources configuration file
 # Add all of your resource here
 
-# Resource ID
+# Resource config ID
 example:
   # The name of your resource
   resource-name: "Example"
@@ -21,3 +21,20 @@ example:
   # API key is used to get buyer list of this resource
   # If not specified, the global API key will be used instead
   api-key: "api key"
+
+  # Providers settings
+  # To use a provider, simply set the resource ID
+  # Leaving resource ID empty will disable that provider
+  # If no providers are available, or the provider is disabled in config.yml,
+  # this resource will be ignored during the verification process
+  providers:
+    polymart:
+      # Polymart resource ID
+      resource-id: 0000
+      # If author's API key of this resource is not the same as global API key
+      # Set this to override the global key, otherwise leave it empty to use global key instead
+      api-key: "API KEY HERE"
+    spigot:
+      # SpigotMC resource ID
+      resource-id: 0000
+  

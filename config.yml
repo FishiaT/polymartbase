@@ -14,6 +14,8 @@
 # %user_name%: Username (i.e. John)
 # %user_discriminator%: Discriminator of an user (i.e. 9999)
 # %user_full%: Full username and discriminator (i.e. John#9999)
+# %invis%: Invisible character (1CBC)
+# %22invis%: 22 invisible character (idk why)
 
 # Polymart API base url
 # The bot won't work if this is incorrect
@@ -25,10 +27,6 @@ bot-token: "TOKEN"
 # Your Discord server ID
 server-id: 0000000
 
-# Global Polymart API Key
-# Used to fetch user name and user ID
-global-api-key: "API KEY HERE"
-
 # Your service name
 # Can be whatever you want
 service: "ExampleService"
@@ -36,18 +34,17 @@ service: "ExampleService"
 # Bot activity
 # Will be shown as Playing <activity>
 # Leave empty to disable
-activity: "Change me"
+activity: ""
 
 # Specify this if you want the /verify command to only be able to used in a specific channel
 # Discord channel ID, leave this empty to disable
 channel-id: 0000
 
-# Emoji indicators, will be used in anything
+# Emoji indicators
 # For built in emojis, use standard name (i.e. :smile:)
 # For external emojis, use emoji ID
-# To get the ID of the emoji, type \ before the emoji
+# To get the ID of an emoji, insert \ before the emoji
 indicator:
-  # Workaround a funny "bug"?
   check_mark: ":white_check_mark:"
   x: ":x:"
 
@@ -55,15 +52,49 @@ indicator:
 layout:
   # Layout mode for verification summary
   # There are 2 modes that you can choose from: default & new
-  # "default" mode is the standard layout currently used in all versions of the bot
+  # "default" mode is the standard layout since 3.0.0
   # "new" mode is the newer layout available from 3.2.3, contain more information and a better layout
   # The "default" layout won't get any further improvements
-  mode: "default"
+  mode: "new"
   # Display user avatar on verification summary
   display-user-avatar: true
   # Layout title
   # Verification summary only
-  title: "Verification Summary for User %user_full%"
+  # PS %22invis% here to make the verification summary layout wider
+  title: "Verification Summary %22nvis%"
   # Layout footer
   # Used globally
-  footer: "Requested by %user_full% at %date% | Bot version %version% (%branch%)"
+  footer: "Bot version %version% (%branch%)"
+
+# Store specific options
+# AT LEAST 1 PROVIDER NEED TO BE ENABLED
+providers:
+  # Polymart
+  # The most supported and most recommended marketplace
+  polymart:
+    # Enable this provider
+    enabled: true
+    # Base API endpoint
+    # You don't want to change this
+    base-url: "https://api.polymart.org"
+    # Service (used for identifying request?)
+    # Can be whatever you want
+    service: "ExampleService"
+    # Global Polymart API Key
+    # Used to fetch user name and user ID
+    global-api-key: "API KEY HERE"
+  # SpigotMC
+  # Support for this is currently experimental and may have breaking bugs
+  spigot:
+    # Enable this provider
+    enabled: false
+    # Base API endpoint
+    # You don't want to change this
+    base-url: "https://www.spigotmc.org"
+    # In order to retrieve buyer list, you must be logged on
+    # Also, premium resource author need to have 2FA (two factor authentication) enabled
+    # Enter your credentials here
+    credentials:
+      username: ""
+      password: ""
+      tfa-code: ""

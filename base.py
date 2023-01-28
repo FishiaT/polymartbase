@@ -1,6 +1,9 @@
 # PolymartBase
 # Licensed under MIT license
 
+# THIS CODE IS FOR VERSION 3.2.4, WHICH IS AN ATTEMPT TO IMPLEMENT SPIGOTMC RESOURCE SUPPORT
+# IT'S NOT YET READY TO USE IN PRODUCTION
+
 # Powered by terrible code written by a dumb weeb
 
 from ruamel import yaml
@@ -18,15 +21,15 @@ resourceData = yaml1.load(Path('resources.yml'))
 
 # Bot version
 # i'm a bit fucked with versioning rn
-bot_version = "3.2.3"
+bot_version = "3.2.4-indev"
 
 # Git branch and whether it is open source or closed source
-bot_branch = "oss/main"
+bot_branch = "oss/3.2.4"
 
 class PolymartAPI:
    async def generateVerifyURL():
-       url = configData['base-url'] + "/v1/generateUserVerifyURL"
-       arg = {'service':configData['service']}
+       url = configData['providers']['polymart']['base-url'] + "/v1/generateUserVerifyURL"
+       arg = {'service':configData['providers']['polymart']['service']}
        token = None
        async with aiohttp.ClientSession() as session:
           async with session.get(url, json=arg) as r:
@@ -34,29 +37,29 @@ class PolymartAPI:
              return token
 
    async def verifyUser(token):
-       url = configData['base-url'] + "/v1/verifyUser"
-       arg = {'service':configData['service'],'token':token}
+       url = configData['providers']['polymart']['base-url'] + "/v1/verifyUser"
+       arg = {'service':configData['providers']['polymart']['service'],'token':token}
        async with aiohttp.ClientSession() as session:
           async with session.get(url, json=arg) as r:
              id = json.loads(str(await r.text()))['response']['result']['user']['id']
              return id
 
    async def getUserData(api_key, user_id):
-       url = configData['base-url'] + "/v1/getUserData"
+       url = configData['providers']['polymart']['base-url'] + "/v1/getUserData"
        arg = {'api_key':api_key,'user_id':user_id}
        async with aiohttp.ClientSession() as session:
           async with session.post(url, json=arg) as r:
               return json.loads(str(await r.text()))
 
    async def getResourceUserData(api_key, resource_id, user_id):
-       url = configData['base-url'] + "/v1/getResourceUserData"
+       url = configData['providers']['polymart']['base-url'] + "/v1/getResourceUserData"
        arg = {'api_key':api_key,'resource_id':resource_id,'user_id':user_id}
        async with aiohttp.ClientSession() as session:
           async with session.post(url, json=arg) as r:
              return json.loads(str(await r.text()))
 
    async def getAccountType(user_id):
-       url = configData['base-url'] + "/v1/getAccountInfo"
+       url = configData['providers']['polymart']['base-url'] + "/v1/getAccountInfo"
        arg = {'user_id':user_id}
        async with aiohttp.ClientSession() as session:
           async with session.post(url, json=arg) as r:
@@ -64,7 +67,7 @@ class PolymartAPI:
                 # why tf do you need to do this
                 # the type property is enough lol
                 return json.loads(str(await r.text()))['response']['user']['type']
-             except:
+             except Exception:
                 return json.loads(str(await r.text()))['response']['team']['type']
 
 class Resource:
@@ -90,8 +93,15 @@ class Resource:
     def getResourceSpecificKey(self):
         return self.resourceSpecificKey
 
+class ResourceProvider:
+    hasPolymart = None
+    hasSpigot = None
+    polymartResourceID = None
+    polymartKeyOverride = None
+    spigotResourceID = None
+
 def parsePlaceholder(ctx, string):
-    return string.replace("%version%", bot_version).replace("%branch%", bot_branch).replace("%date%", str(datetime.datetime.now().strftime("%m/%d/%Y %H:%M"))).replace("%user_name%", str(ctx.author.name)).replace("%user_discriminator%", str(ctx.author.discriminator)).replace("%user_full%", str(ctx.author.name) + "#" + str(ctx.author.discriminator))
+    return string.replace("%version%", bot_version).replace("%branch%", bot_branch).replace("%date%", str(datetime.datetime.now().strftime("%m/%d/%Y %H:%M"))).replace("%user_name%", str(ctx.author.name)).replace("%user_discriminator%", str(ctx.author.discriminator)).replace("%user_full%", str(ctx.author.name) + "#" + str(ctx.author.discriminator)).replace("%invis%", "᲼").replace("%22invis%", "᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼")
 
 print("PolymartBase " + str(bot_version))
 print("Licensed under the permissive MIT license")
@@ -150,40 +160,30 @@ async def user_token_response(ctx, response: str):
     resourceList = await getAllResources()
     member = ctx.member
     user_id = await PolymartAPI.verifyUser(response)
-    user_data = await PolymartAPI.getUserData(configData['global-api-key'], user_id)
-    user_name = await getUser(response, configData['global-api-key'], user_data)
-    base_first = ""
-    base_final = ""
+    user_data = await PolymartAPI.getUserData(configData['providers']['polymart']['global-api-key'], user_id)
+    user_name = user_data['response']['user']['username']
+    base_first = "Username: " + user_name + "\nUser ID: " + user_id + "\n\nStatus:"
+    base_final = "\n\nVerified Successfully!"
     final_text = ""
     embed = interactions.Embed(title=parsePlaceholder(ctx, configData['layout']['title']), color=0x33a343)
     embed.set_footer(text=parsePlaceholder(ctx, configData['layout']['footer']))
-    if configData['layout']['display-user-avatar'] == True:
-        embed.set_thumbnail(url=member.user.avatar_url)
-    if configData['layout']['mode'] == "new":
-        embed.add_field(name="**User Name**", value=user_name, inline=True)
-        embed.add_field(name="**User ID**", value=str(user_id), inline=True)
-        embed.add_field(name="**Date**", value=str(datetime.datetime.now().strftime("%m/%d/%Y %H:%M")), inline=True)
-    elif configData['layout']['mode'] == "default":
-        base_first = "Username: " + user_name + "\nUser ID: " + user_id + "\n\nStatus:"
-        base_final = "\n\nVerified Successfully!"
     for r in resourceList:
-        specificKey = configData.get('global-api-key', None) or resourceList[r].getResourceSpecificKey()
         ownershipStatus = await checkAndVerify(ctx, specificKey, resourceList[r].getResourceID(), response, resourceList[r].getResourceRoleID(), user_data, user_id)
         if configData['layout']['mode'] == "new" and ownershipStatus:
             final_text += resourceList[r].getResourceIcon() + " " + resourceList[r].getResourceName() + "\n"
         elif configData['layout']['mode'] == "default":
             final_text += "\n" + resourceList[r].getResourceIcon() + " **" + resourceList[r].getResourceName() + "**: " + str(ownershipStatus)
     if configData['layout']['mode'] == "new":
+        embed.add_field(name="**User Name**", value=user_name, inline=True)
+        embed.add_field(name="**User ID**", value=str(user_id), inline=True)
+        embed.add_field(name="**Date**", value=str(datetime.datetime.now().strftime("%m/%d/%Y %H:%M")), inline=True)
         embed.add_field(name="**Owned**", value=final_text)
         embed.add_field(name="Verified Successfully!", value="")
-        embed.description = "• Discord: " + str(ctx.author.name) + "#" + str(ctx.author.discriminator) + "\n• Account Type: " + str(await PolymartAPI.getAccountType(user_id)).replace("user", "User").replace("team", "Team")
+        embed.description = "**• Discord**: " + str(ctx.author.name) + "#" + str(ctx.author.discriminator) + "\n**• Account Type**: " + str(await PolymartAPI.getAccountType(user_id)).replace("user", "User").replace("team", "Team")
     elif configData['layout']['mode'] == "default":
         text = base_first + final_text + base_final
         embed.description = text.replace("False", configData['indicator']['x']).replace("True", configData['indicator']['check_mark']).replace("None", "")
     await ctx.send(embeds=embed)
-    
-async def getUser(user_token, api_key, user_data):
-    return user_data['response']['user']['username']
     
 async def checkAndVerify(context, api_key, resource_id, user_token, verified_role_id, user_data, user_id):
     resource_user_data = await PolymartAPI.getResourceUserData(api_key, resource_id, user_id)
@@ -200,8 +200,7 @@ async def getAllResources():
     resourceList = {}
     for r in resourceData:
         resource = resourceData[r]
-        resourceConf = Resource(resource['resource-name'], resource['resource-id'], resource['role-id'], resource['icon'], resource['api-key'])
-        resourceList[r] = resourceConf
+        resourceList[r] = Resource(resource['resource-name'], resource['resource-id'], resource['role-id'], resource['icon'], resource['api-key'])
     return resourceList
             
 bot.start()
