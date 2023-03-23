@@ -2,9 +2,7 @@
  Self hosted configurable Discord bot for verifying Polymart plugins ownership.
 
 ## Initial setup
- NOTE: This is mainly targeted at Windows and GNU/Linux systems, as these are the only platforms tested. However, since this is written in Python, it should work on every platform that support Python.
-
- First, install Python 3.8 or newer. See your platform's documentation for how.
+ You will need Python 3.8 or newer installed.
 
  Then, run `pip install aiohttp git+https://github.com/interactions-py/library.git@unstable ruamel.yaml` to install the needed dependencies. 
 
