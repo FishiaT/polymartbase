@@ -7,7 +7,7 @@ import json
 import interactions
 import datetime
 
-bot_version = "4.0.0"
+bot_version = "4.0.1"
 
 config_data = yaml.YAML(typ='safe').load(Path('config.yml'))
 resource_data = yaml.YAML(typ='safe').load(Path('resources.yml'))
@@ -163,6 +163,8 @@ async def on_component(event: interactions.api.events.Component):
                     purchase_time = datetime.datetime.fromtimestamp(int(resource_user_data['response']['resource']['purchaseTime'])).strftime("%m/%d/%Y")
                     owned_resources_text += resources[res].icon + " " + resources[res].name + " (" + str(purchase_time) + ")\n" 
                     owned_res += 1
+            if owned_res == 0:
+                owned_resources_text = "Nothing :(\n"
             owned_resources_text += "\n**Verified Successfully!**"
             summary_embed.add_field(name="**Owned (" + str(owned_res) + "/" + str(total_res) + ")**", value=owned_resources_text)
             await modal_ctx.send(embeds=summary_embed)
