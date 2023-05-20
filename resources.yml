@@ -1,23 +1,24 @@
 # Resources configuration file
-# Add all of your resource here
+# Add all of your resource here.
 
 # Resource ID
 example:
   # The name of your resource
-  resource-name: "Example"
+  resource_name: "Example"
 
   # Polymart resource ID
-  resource-id: 0000
+  resource_id: 9999
 
   # Role ID that the bot will give if user successfully verified
-  role-id: 00000000000000
+  role_id: 00000000000
 
-  # Discord emoji as resource icon
-  # See config.yml indicators to know what to use
-  # Leave this empty to disable
-  icon: "emoji here"
+  # Icon for your resorce
+  # For built-in emojis, just write it like normal.
+  # For external emojis, insert "\" before the emoji to get its ID.
+  # Leave this empty to disable it.
+  icon: ""
 
   # Resource specific API Key
-  # API key is used to get buyer list of this resource
-  # If not specified, the global API key will be used instead
-  api-key: "api key"
+  # Specify this if the global API key cannot be used for this resource.
+  # Leave this empty to disable it.
+  api_key: ""

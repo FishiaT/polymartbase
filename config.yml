@@ -1,69 +1,52 @@
 # This is the main configuration file for PolymartBase
-# Change the values accordingly to your server
+# Change the values accordingly to your server.
 
-# WHEN CREATING THE BOT THOUGH DISCORD DEVELOPER PORTAL
-# MAKE SURE TO ENABLE "bot" AND "application.commands" SCOPE
-# OTHERWISE THE BOT WON'T WORK
-
-# PolymartBase have a few info placeholders for bot version, date, etc
-# You can use these placeholders the layout customization
-
-# %version%: Bot version (i.e. 3.2.3)
-# %branch%: Bot branch (i.e. oss/main)
-# %date%: Current date (format: m/d/y h:m)
-# %user_name%: Username (i.e. John)
-# %user_discriminator%: Discriminator of an user (i.e. 9999)
-# %user_full%: Full username and discriminator (i.e. John#9999)
+# Make sure to enable "bot" and "application.commands" scope
+# when creating the bot in Discord Developer Portal.
 
 # Polymart API base url
-# The bot won't work if this is incorrect
-base-url: "https://api.polymart.org"
+# You most likely don't want to change this.
+base_url: "https://api.polymart.org"
 
 # Your Discord bot token
-bot-token: "TOKEN"
+bot_token: "DISCORD_BOT_TOKEN"
 
 # Your Discord server ID
-server-id: 0000000
+server_id: 00000000000000
 
 # Global Polymart API Key
-# Used to fetch user name and user ID
-global-api-key: "API KEY HERE"
+# Used globally for fetching user information and when there's no resource-specific API key.
+global_api_key: "API_KEY_HERE"
 
 # Your service name
-# Can be whatever you want
-service: "ExampleService"
+# Can be whatever you want.
+service: "MyBot"
 
 # Bot activity
-# Will be shown as Playing <activity>
-# Leave empty to disable
-activity: "Change me"
+# Will be shown as Playing <activity>.
+# Leave empty to disable.
+activity: "Change me!"
 
-# Specify this if you want the /verify command to only be able to used in a specific channel
-# Discord channel ID, leave this empty to disable
-channel-id: 0000
+# Limiting the usage of /verify to a few channels.
+# You can leave this empty to allow it everywhere.
+channel_id: 
+  - 0000
 
-# Emoji indicators, will be used in anything
-# For built in emojis, use standard name (i.e. :smile:)
-# For external emojis, use emoji ID
-# To get the ID of the emoji, type \ before the emoji
+# Default indicators
+# For built-in emojis, just write it like normal.
+# For external emojis, insert "\" before the emoji to get its ID.
 indicator:
-  # Workaround a funny "bug"?
   check_mark: ":white_check_mark:"
   x: ":x:"
 
-# Layout settings
+# Layout customization (not much actually).
 layout:
-  # Layout mode for verification summary
-  # There are 2 modes that you can choose from: default & new
-  # "default" mode is the standard layout currently used in all versions of the bot
-  # "new" mode is the newer layout available from 3.2.3, contain more information and a better layout
-  # The "default" layout won't get any further improvements
-  mode: "default"
-  # Display user avatar on verification summary
-  display-user-avatar: true
-  # Layout title
-  # Verification summary only
-  title: "Verification Summary for User %user_full%"
-  # Layout footer
-  # Used globally
-  footer: "Requested by %user_full% at %date% | Bot version %version% (%branch%)"
+  # The color of error embeds (hex color).
+  error_color: "b33825"
+  # The color of the summary embeds (hex color).
+  summary_color: "13ad75"
+  
+# Disable the bot built-in failsafe.
+# Doing this will make the bot ignore all the built-in error checks, making it more error-prone.
+# Please do not disable this unless you know what you are doing.
+disable_failsafe: false
