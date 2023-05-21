@@ -6,7 +6,7 @@
 
  Run `pip install httpx discord-py-interactions ruamel.yaml` to install the needed dependencies. 
 
- Now clone this repository, adjust the options in `config.yml` and `resources.yml`, then run the bot by running `python3 bot.py`. If configured properly, the bot should go online.
+ Now clone this repository, adjust the options in `config.yml` and `resources.yml`, then run the bot by running `python3 base.py`. If configured properly, the bot should go online.
 
 ## Configuration
  Most configuration options are properly documented inside the config files. Change the options accordingly.
