@@ -160,7 +160,10 @@ async def on_component(event: interactions.api.events.Component):
                 if not await api_failsafe(ctx, resource_user_data, "res_user_data", resources[res]):
                     return
                 if await verify_ownership(modal_ctx, resources[res], resource_user_data, user_id):
-                    purchase_time = datetime.datetime.fromtimestamp(int(resource_user_data['response']['resource']['purchaseTime'])).strftime("%m/%d/%Y")
+                    if resource_user_data['response']['resource']['purchaseTime'] is not None:
+                        purchase_time = datetime.datetime.fromtimestamp(int(resource_user_data['response']['resource']['purchaseTime'])).strftime("%m/%d/%Y")
+                    else:
+                        purchase_time = "No purchase time available"
                     owned_resources_text += resources[res].icon + " " + resources[res].name + " (" + str(purchase_time) + ")\n" 
                     owned_res += 1
             if owned_res == 0:
