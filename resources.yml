@@ -3,22 +3,22 @@
 
 # Resource ID
 example:
-  # The name of your resource
+  # Resource display name
   resource_name: "Example"
 
   # Polymart resource ID
   resource_id: 9999
 
-  # Role ID that the bot will give if user successfully verified
+  # Verified role ID
   role_id: 00000000000
 
   # Icon for your resorce
-  # For built-in emojis, just write it like normal.
-  # For external emojis, insert "\" before the emoji to get its ID.
+  # For built-in emojis, write it the same way you did when texting (e.g. :smile:)
+  # For external emojis, insert "\" before the emoji name to get its ID (e.g. "\:thonk:")
   # Leave this empty to disable it.
   icon: ""
 
   # Resource specific API Key
-  # Specify this if the global API key cannot be used for this resource.
-  # Leave this empty to disable it.
+  # If you are not the author of this resource, set this to the resource author's API key.
+  # Leave this empty will use the global API key instead.
   api_key: ""

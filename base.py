@@ -7,7 +7,7 @@ import json
 import interactions
 import datetime
 
-bot_version = "4.0.1"
+bot_version = "4.0.2"
 
 config_data = yaml.YAML(typ='safe').load(Path('config.yml'))
 resource_data = yaml.YAML(typ='safe').load(Path('resources.yml'))
@@ -83,16 +83,9 @@ async def api_failsafe(ctx, json_data, err_type, resource=None):
             error_embed.description = config_data['indicator']['x'] + " Failed to get user resource ownership information for " + str(resource.name) + "!"
             await ctx.send(embeds=error_embed, ephemeral=True)
             return False
-    
-#@interactions.listen(disable_default_listeners=True)
-#async def on_command_error(event: interactions.api.events.Error):
-#    await event.ctx.send("Something has went wrong, please try again.", ephemeral=True)
                
 @interactions.slash_command(name="verify", description="Verify plugins ownership.")
 async def verify(ctx: interactions.SlashContext):
-    #if ctx.author.id != 713566850650341437:
-    #    await ctx.send("Hey there! The bot is currently in a rewrite. As such, the bot is not available to use at the moment. Please use tickets to verify yourself for the time being. Sorry for the inconvenience.", ephemeral=True)
-    #    return
     if config_data['channel_id'] is not None and ctx.channel.id not in config_data['channel_id']:
         error_embed = interactions.Embed(description=config_data['indicator']['x'] + " Sorry, you can\'t use this command here!")
         await ctx.send(embeds=error_embed, ephemeral=True)
@@ -163,7 +156,7 @@ async def on_component(event: interactions.api.events.Component):
                     if resource_user_data['response']['resource']['purchaseTime'] is not None:
                         purchase_time = datetime.datetime.fromtimestamp(int(resource_user_data['response']['resource']['purchaseTime'])).strftime("%m/%d/%Y")
                     else:
-                        purchase_time = "No purchase time available"
+                        purchase_time = "Author"
                     owned_resources_text += resources[res].icon + " " + resources[res].name + " (" + str(purchase_time) + ")\n" 
                     owned_res += 1
             if owned_res == 0:

@@ -1,8 +1,5 @@
 # This is the main configuration file for PolymartBase
-# Change the values accordingly to your server.
-
-# Make sure to enable "bot" and "application.commands" scope
-# when creating the bot in Discord Developer Portal.
+# Change the values accordingly.
 
 # Polymart API base url
 # You most likely don't want to change this.
@@ -27,14 +24,14 @@ service: "MyBot"
 # Leave empty to disable.
 activity: "Change me!"
 
-# Limiting the usage of /verify to a few channels.
-# You can leave this empty to allow it everywhere.
+# Limit the usage of the /verify command to a list of specified channels.
+# Leave empty to disable.
 channel_id: 
   - 0000
 
 # Default indicators
-# For built-in emojis, just write it like normal.
-# For external emojis, insert "\" before the emoji to get its ID.
+# For built-in emojis, write it the same way you did when texting (e.g. :smile:)
+# For external emojis, insert "\" before the emoji name to get its ID (e.g. "\:thonk:")
 indicator:
   check_mark: ":white_check_mark:"
   x: ":x:"
