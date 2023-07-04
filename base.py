@@ -137,7 +137,12 @@ async def on_component(event: interactions.api.events.Component):
                 return
             user_name = user_data_resp['response']['user']['username']
             await modal_ctx.defer()
-            summary_embed = interactions.Embed(title="Success", color="#" + config_data['layout']['summary_color'], footer="Bot version " + bot_version, description="**• Discord**: " + str(ctx.author.display_name) + "#" + str(ctx.author.discriminator) + "\n**• Date**: " + str(datetime.datetime.now().strftime("%m/%d/%Y")))
+            user_name_repre = ""
+            if int(ctx.author.discriminator) == 0:
+                user_name_repre = "@" + str(ctx.author.display_name)
+            else:
+                user_name_repre = str(ctx.author.display_name) + "#" + str(ctx.author.discriminator)
+            summary_embed = interactions.Embed(title="Success", color="#" + config_data['layout']['summary_color'], footer="Bot version " + bot_version, description="**• Discord**: " + user_name_repre + "\n**• Date**: " + str(datetime.datetime.now().strftime("%m/%d/%Y")))
             summary_embed.add_field(name="**User Name**", value=user_name, inline=True)
             summary_embed.add_field(name="**User ID**", value=str(user_id), inline=True)
             owned_resources_text = ""
