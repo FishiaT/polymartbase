@@ -1,4 +1,6 @@
-# polymartbase
+## This repository is archived and won't get any updates in the future. Feel free to fork this repository and continue updating it and keep it up-to-date with Polymart and/or `interactions.py` changes, but be sure to pick a better name that `polymartbase`.
+
+## polymartbase
  Self-hosted and easily configurable Discord bot for verifying Polymart plugin ownership.
 
 ## Installation
